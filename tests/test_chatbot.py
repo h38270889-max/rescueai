@@ -52,3 +52,16 @@ def test_chatbot_history_and_clear(client):
     # Retrieve history again (must be empty)
     hist_after = client.get(f'/api/chat/history?session_id={session_id}')
     assert len(hist_after.get_json()['messages']) == 0
+
+
+def test_chatbot_csrf_exemption_with_active_csrf(app):
+    """Verify JSON chat API functions without 400 error when CSRF protection is strictly active."""
+    app.config['WTF_CSRF_ENABLED'] = True
+    test_client = app.test_client()
+    response = test_client.post('/api/chat', json={
+        'message': 'Chemical leak in factory',
+        'language': 'en'
+    })
+    assert response.status_code == 200
+    assert response.get_json()['success'] is True
+

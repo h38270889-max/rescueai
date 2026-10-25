@@ -1,7 +1,7 @@
 import uuid
 from flask import Blueprint, render_template, request, jsonify, session
 from flask_login import current_user
-from extensions import db
+from extensions import db, csrf
 from app.models.chat import ChatConversation, ChatMessage
 from app.services.ai_service import generate_chat_response
 
@@ -51,6 +51,7 @@ def index():
     )
 
 
+@csrf.exempt
 @chatbot_bp.route('/api/chat', methods=['POST'])
 def api_chat():
     """Handle chat messages via JSON API with live triage and fallback detection."""
@@ -119,6 +120,7 @@ def api_history():
     return jsonify({'messages': messages})
 
 
+@csrf.exempt
 @chatbot_bp.route('/api/chat/clear', methods=['POST'])
 def api_clear():
     """Clear chat messages in current conversation."""

@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearChatBtn = document.getElementById('btn-clear-chat');
   const langSelect = document.getElementById('chat-lang-select');
   const sessionId = document.getElementById('chat-session-id')?.value;
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
   const micBtn = document.getElementById('btn-mic');
   const voiceIndicator = document.getElementById('voice-indicator');
   const voiceStatusText = document.getElementById('voice-status-text');
@@ -167,7 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
           message: messageText,
@@ -308,7 +310,10 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await fetch('/api/chat/clear', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
           body: JSON.stringify({ session_id: sessionId })
         });
         chatMessages.innerHTML = '';

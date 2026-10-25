@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0d2b45">
   <meta name="description" content="ResQAI — AI-Powered Multilingual Emergency Triage and Offline Disaster Support System">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <title>{% block title %}{{ t('app_name') }}{% endblock %} — AI Emergency Triage</title>
 

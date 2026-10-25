@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, jsonify
 from flask_login import login_required, current_user
-from extensions import db
+from extensions import db, csrf
 from app.models.incident import EmergencyReport, IncidentStatusHistory
 from app.models.audit import AuditLog
 from app.forms.incident_forms import EmergencyReportForm
@@ -55,6 +55,7 @@ def report():
     return render_template('incidents/report.html', form=form)
 
 
+@csrf.exempt
 @incidents_bp.route('/sos', methods=['POST'])
 def trigger_sos():
     """Rapid One-Tap SOS emergency beacon endpoint."""
