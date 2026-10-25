@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Report Emergency — ResQAI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- High-Urgency Header Banner -->
+      <div class="alert alert-danger d-flex align-items-center justify-content-between p-3 rounded-3 mb-4 shadow-sm">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-exclamation-octagon-fill fs-3 text-danger"></i>
+          <div>
+            <strong>Immediate Life Threat?</strong> If someone is in mortal danger, please dial <strong>112</strong> immediately.
+          </div>
+        </div>
+        <a href="tel:112" class="btn btn-danger btn-sm fw-bold px-3 py-1 text-nowrap">Call 112</a>
+      </div>
+
+      <div class="resq-card p-4 p-sm-5 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <div>
+            <h3 class="fw-bold mb-1">Emergency Incident Report</h3>
+            <p class="text-muted small mb-0">Describe the crisis in your preferred language. AI triage will analyze and route to responders.</p>
+          </div>
+          <span class="badge bg-secondary">
+            <i class="bi bi-shield-lock-fill me-1"></i> Idempotent Sync Ready
+          </span>
+        </div>
+
+        <form id="emergency-report-form" method="POST" action="{{ url_for('incidents.report') }}" enctype="multipart/form-data">
+          {{ form.hidden_tag() }}
+
+          <!-- Hidden input for client-side generated idempotency key -->
+          <input type="hidden" id="idempotency_key" name="idempotency_key" value="">
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-7">
+              <label class="form-label fw-semibold small" for="category">{{ form.category.label.text }} *</label>
+              {{ form.category(class="form-select fw-semibold text-danger") }}
+            </div>
+            <div class="col-md-5">
+              <label class="form-label fw-semibold small" for="original_language">{{ form.original_language.label.text }}</label>
+              {{ form.original_language(class="form-select") }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small" for="description">{{ form.description.label.text }} *</label>
+            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="4", placeholder="Explain clearly what happened: where you are, trapped individuals, injuries, water level, or smoke presence...") }}
+            {% for error in form.description.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+            <div class="form-text small">
+              You can type in English, Hindi (हिन्दी), Marathi (मराठी), Urdu (اردو), or any other supported language.
+            </div>
+          </div>
+
+          <!-- Contact & Affected count -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-5">
+              <label class="form-label fw-semibold small" for="contact_name">{{ form.contact_name.label.text }}</label>
+              {{ form.contact_name(class="form-control", placeholder="Your name or on-scene contact") }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small" for="contact_phone">{{ form.contact_phone.label.text }}</label>
+              {{ form.contact_phone(class="form-control", placeholder="+91 98765 43210") }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold small" for="affected_count">{{ form.affected_count.label.text }}</label>
+              {{ form.affected_count(class="form-control", min="1") }}
+            </div>
+          </div>
+
+          <!-- Location & Geolocation detection -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label fw-semibold small mb-0" for="location_address">{{ form.location_address.label.text }}</label>
+              <button type="button" id="btn-detect-location" class="btn btn-sm btn-outline-primary py-0 px-2 small">
+                <i class="bi bi-geo-alt me-1"></i> Detect Current GPS
+              </button>
+            </div>
+            {{ form.location_address(class="form-control", placeholder="Street, landmark, floor, or village name...") }}
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label text-muted small mb-1" for="latitude">Latitude (GPS)</label>
+              {{ form.latitude(class="form-control form-control-sm", placeholder="e.g. 19.0760", readonly=false) }}
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small mb-1" for="longitude">Longitude (GPS)</label>
+              {{ form.longitude(class="form-control form-control-sm", placeholder="e.g. 72.8777", readonly=false) }}
+            </div>
+          </div>
+
+          <!-- Photo Upload -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold small" for="image">{{ form.image.label.text }}</label>
+            {{ form.image(class="form-control") }}
+            <div class="form-text small">Accepted image formats: PNG, JPG, JPEG, WEBP (Max 5MB).</div>
+          </div>
+
+          <!-- Consent Checkbox -->
+          <div class="p-3 bg-light rounded-3 border mb-4">
+            <div class="form-check">
+              {{ form.consent(class="form-check-input" + (" is-invalid" if form.consent.errors else "")) }}
+              <label class="form-check-label small text-dark fw-semibold" for="consent">
+                {{ form.consent.label.text }}
+              </label>
+              {% for error in form.consent.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" id="btn-submit-report" class="btn btn-resq-urgent btn-lg fw-bold px-4">
+              <i class="bi bi-send-fill me-1"></i> Submit Emergency Report
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('emergency-report-form');
+  const idempInput = document.getElementById('idempotency_key');
+  
+  if (idempInput && !idempInput.value) {
+    idempInput.value = generateIdempotencyKey();
+  }
+
+  // Intercept offline submissions
+  form.addEventListener('submit', async (e) => {
+    if (!navigator.onLine) {
+      e.preventDefault();
+      
+      const category = document.getElementById('category').value;
+      const description = document.getElementById('description').value;
+      const original_language = document.getElementById('original_language').value;
+      const contact_name = document.getElementById('contact_name').value;
+      const contact_phone = document.getElementById('contact_phone').value;
+      const location_address = document.getElementById('location_address').value;
+      const latitude = document.getElementById('latitude').value ? parseFloat(document.getElementById('latitude').value) : null;
+      const longitude = document.getElementById('longitude').value ? parseFloat(document.getElementById('longitude').value) : null;
+      const affected_count = parseInt(document.getElementById('affected_count').value) || 1;
+      const idempotency_key = idempInput.value;
+
+      if (!description.trim()) {
+        alert('Please provide a description of the emergency.');
+        return;
+      }
+
+      const reportData = {
+        idempotency_key,
+        category,
+        description,
+        original_language,
+        contact_name,
+        contact_phone,
+        location_address,
+        latitude,
+        longitude,
+        affected_count
+      };
+
+      try {
+        await saveReportToOfflineQueue(reportData);
+        alert(
+          "⚠️ Offline Mode Active:\nYour emergency report has been safely queued in local storage (IndexedDB) with Idempotency Key " +
+          idempotency_key.substring(0, 8) + "...\n\nIt will be transmitted automatically the moment network connection returns."
+        );
+        window.location.href = "{{ url_for('main.offline_guide') }}";
+      } catch (err) {
+        alert("Failed to store report in local offline queue: " + err);
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

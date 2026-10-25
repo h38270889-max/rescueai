@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Survival Handbook (Offline Ready) — ResQAI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <span class="badge bg-secondary mb-1"><i class="bi bi-hdd-network"></i> Offline PWA Cached Document</span>
+      <h2 class="fw-bold mb-0">Emergency Survival Handbook</h2>
+      <p class="text-muted small mb-0">
+        Actionable safety protocols for natural disasters and medical crises. This document remains accessible even without cellular or internet connectivity.
+      </p>
+    </div>
+    <div>
+      <a href="{{ url_for('incidents.report') }}" class="btn btn-resq-urgent btn-sm">
+        <i class="bi bi-exclamation-octagon-fill me-1"></i> File Emergency Report
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Quick Nav sidebar -->
+    <div class="col-lg-3 col-md-4">
+      <div class="resq-card p-3 sticky-top" style="top: 80px;">
+        <h6 class="fw-bold text-uppercase small text-muted mb-3">Hazard Categories</h6>
+        <div class="list-group list-group-flush small">
+          <a href="#flood" class="list-group-item list-group-item-action fw-semibold"><i class="bi bi-water text-primary me-2"></i> Floods & Water</a>
+          <a href="#earthquake" class="list-group-item list-group-item-action fw-semibold"><i class="bi bi-building-exclamation text-warning me-2"></i> Earthquakes</a>
+          <a href="#fire" class="list-group-item list-group-item-action fw-semibold"><i class="bi bi-fire text-danger me-2"></i> Fires & Smoke</a>
+          <a href="#medical" class="list-group-item list-group-item-action fw-semibold"><i class="bi bi-heart-pulse text-danger me-2"></i> First Aid & Medical</a>
+          <a href="#cyclone" class="list-group-item list-group-item-action fw-semibold"><i class="bi bi-wind text-info me-2"></i> Cyclones & Storms</a>
+          <a href="#kit" class="list-group-item list-group-item-action fw-semibold"><i class="bi bi-bag-check text-success me-2"></i> Emergency Go-Bag Kit</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guide Content -->
+    <div class="col-lg-9 col-md-8">
+      <!-- Floods -->
+      <div class="resq-card p-4 mb-4" id="flood">
+        <h4 class="fw-bold text-primary mb-3"><i class="bi bi-water me-2"></i> Floods & Rising Waters</h4>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">During Rising Water:</h6>
+            <ul class="small text-secondary ps-3">
+              <li>Move immediately to higher ground or upper building floors.</li>
+              <li><strong>Turn off main power switches and gas cylinders</strong> before water enters the premises.</li>
+              <li>Disconnect inverter batteries if water is rising near electrical outlets.</li>
+              <li>Never step into flowing water. Just 6 inches of fast water can knock a person over.</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">Trapped in a Building:</h6>
+            <ul class="small text-secondary ps-3">
+              <li>Climb to the roof only if necessary; signal rescue teams with a bright cloth or whistle.</li>
+              <li>Do NOT hide in a closed attic without an exit to the roof; you risk becoming trapped.</li>
+              <li>Boil all drinking water or use chlorine tablets. Floodwaters carry severe contaminants.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Earthquakes -->
+      <div class="resq-card p-4 mb-4" id="earthquake">
+        <h4 class="fw-bold text-warning text-dark mb-3"><i class="bi bi-building-exclamation me-2"></i> Earthquakes & Structural Tremors</h4>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">Drop, Cover, and Hold On:</h6>
+            <ul class="small text-secondary ps-3">
+              <li><strong>DROP</strong> down onto your hands and knees.</li>
+              <li><strong>COVER</strong> your head and neck under a sturdy table or desk.</li>
+              <li><strong>HOLD ON</strong> to your shelter until shaking stops.</li>
+              <li>Stay away from glass windows, exterior doors, and heavy furniture.</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">Trapped Under Debris:</h6>
+            <ul class="small text-secondary ps-3">
+              <li>Cover your mouth with a cloth or clothing to avoid suffocating on dust.</li>
+              <li>Do NOT light matches or lighters (risk of broken gas pipelines).</li>
+              <li>Tap on a pipe or wall at regular intervals so rescuers can triangulate your location.</li>
+              <li>Shout only as a last resort to preserve energy and prevent dust inhalation.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fires -->
+      <div class="resq-card p-4 mb-4" id="fire">
+        <h4 class="fw-bold text-danger mb-3"><i class="bi bi-fire me-2"></i> Fires & Smoke Inhalation</h4>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">Evacuation Protocol:</h6>
+            <ul class="small text-secondary ps-3">
+              <li><strong>Stay low to the floor:</strong> Smoke and lethal carbon monoxide rise upwards.</li>
+              <li>Check door handles with the back of your hand. If hot, do NOT open.</li>
+              <li><strong>NEVER use elevators</strong> during a fire. Use staircases only.</li>
+              <li>If your clothes catch fire: <strong>STOP, DROP, and ROLL</strong>.</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">If Trapped by Flames:</h6>
+            <ul class="small text-secondary ps-3">
+              <li>Close doors between you and the fire.</li>
+              <li>Seal cracks around doors with wet towels or bedsheets.</li>
+              <li>Signal through an open window with a bright cloth or flashlight.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medical First Aid -->
+      <div class="resq-card p-4 mb-4" id="medical">
+        <h4 class="fw-bold text-danger mb-3"><i class="bi bi-heart-pulse me-2"></i> Urgent First Aid Protocols</h4>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">Severe Bleeding:</h6>
+            <p class="small text-secondary">
+              Apply firm, continuous pressure directly over the wound with a clean cloth. Elevate the wounded limb above heart level if no bone fracture is suspected. Do NOT remove soaked cloths; place additional cloths on top.
+            </p>
+            <h6 class="fw-bold text-dark">Burns:</h6>
+            <p class="small text-secondary">
+              Cool the burn under cool, clean running water for at least 15 minutes. Never apply ice, butter, or paste. Cover loosely with sterile non-stick bandage.
+            </p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">Unconscious but Breathing:</h6>
+            <p class="small text-secondary">
+              Place the victim into the <strong>Recovery Position</strong> (turn gently onto their side, tilt head backwards to keep airway open, bend upper leg at right angle). Monitor breathing continuously.
+            </p>
+            <h6 class="fw-bold text-dark">Suspected Spinal / Head Injury:</h6>
+            <p class="small text-secondary">
+              Keep the patient completely still. Do NOT twist or bend the neck or spine unless in imminent danger of explosion or fire.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency Go-Bag Kit -->
+      <div class="resq-card p-4" id="kit">
+        <h4 class="fw-bold text-success mb-3"><i class="bi bi-bag-check me-2"></i> 72-Hour Emergency Survival Go-Bag</h4>
+        <div class="row g-2 small text-secondary">
+          <div class="col-sm-6">
+            <div><i class="bi bi-check2-square text-success me-1"></i> 3 Litres drinking water per person per day</div>
+            <div><i class="bi bi-check2-square text-success me-1"></i> Non-perishable, ready-to-eat dry rations (dates, nuts, biscuits)</div>
+            <div><i class="bi bi-check2-square text-success me-1"></i> Battery-powered or hand-crank radio & flashlight</div>
+            <div><i class="bi bi-check2-square text-success me-1"></i> Essential prescription medicines (7-day supply)</div>
+          </div>
+          <div class="col-sm-6">
+            <div><i class="bi bi-check2-square text-success me-1"></i> First aid kit (gauze, antiseptic, triangular bandages)</div>
+            <div><i class="bi bi-check2-square text-success me-1"></i> Emergency whistle to signal responders</div>
+            <div><i class="bi bi-check2-square text-success me-1"></i> Power bank with USB cable (charged)</div>
+            <div><i class="bi bi-check2-square text-success me-1"></i> Waterproof pouch with identity cards & cash</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

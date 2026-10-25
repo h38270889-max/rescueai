@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ alert.title }} — ResQAI Emergency Alert{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <a href="{{ url_for('alerts.list_alerts') }}" class="small text-decoration-none text-muted mb-2 d-inline-block">
+        &larr; Back to All Alerts
+      </a>
+
+      <div class="resq-card p-4 p-sm-5 border-{% if alert.urgency == 'Critical' %}danger{% elif alert.urgency == 'High' %}warning{% else %}info{% endif %} shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge priority-badge-{{ alert.urgency|lower }} px-3 py-2 fs-6">
+              {{ alert.urgency }} Urgency
+            </span>
+            <span class="badge bg-light text-dark border text-capitalize">
+              Category: {{ alert.category.replace('_', ' ') }}
+            </span>
+          </div>
+          <span class="text-muted small">Issued: {{ alert.created_at.strftime('%b %d, %Y • %H:%M UTC') }}</span>
+        </div>
+
+        <h3 class="fw-bold mb-3">{{ alert.title }}</h3>
+
+        <div class="p-3 bg-light rounded-3 border mb-4">
+          <h6 class="fw-bold text-dark mb-2">Protective Guidance & Directive:</h6>
+          <p class="text-dark mb-0" style="white-space: pre-wrap; font-size: 1.05rem;">{{ alert.message }}</p>
+        </div>
+
+        <div class="row g-3 mb-4 small text-secondary">
+          <div class="col-sm-6">
+            <div>Broadcast Audience: <strong class="text-dark">{{ alert.target_audience.title() }}</strong></div>
+            <div>Geographical Area: <strong class="text-dark">{{ alert.target_region or 'All Participating Regions' }}</strong></div>
+          </div>
+          <div class="col-sm-6">
+            <div>Alert ID: <code>{{ alert.alert_id }}</code></div>
+            <div>Status: <span class="badge bg-success">Active Official Advisory</span></div>
+          </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <a href="{{ url_for('main.offline_guide') }}" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-book me-1"></i> Open Survival Handbook
+          </a>
+          <a href="tel:112" class="btn btn-danger btn-sm fw-bold">
+            <i class="bi bi-telephone-fill me-1"></i> Pan-India Emergency (112)
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

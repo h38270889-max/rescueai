@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}Live Emergency Incident Map — ResQAI{% endblock %}
+
+{% block head_extra %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+  #incident-map {
+    height: 620px;
+    width: 100%;
+    border-radius: 12px;
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  .map-legend {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    line-height: 1.6;
+    font-size: 0.85rem;
+  }
+  .legend-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .pulse-marker {
+    animation: marker-pulse 1.8s infinite;
+  }
+  @keyframes marker-pulse {
+    0% { transform: scale(0.95); opacity: 0.9; }
+    50% { transform: scale(1.2); opacity: 0.5; }
+    100% { transform: scale(0.95); opacity: 0.9; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-md-4">
+  <!-- Page Header -->
+  <div class="row align-items-center mb-4">
+    <div class="col-lg-8">
+      <h1 class="h3 fw-bold text-navy mb-1">
+        <i class="bi bi-geo-alt-fill text-danger me-2"></i>Live Disaster & Incident Map
+      </h1>
+      <p class="text-muted mb-0">
+        Real-time spatial visualization of active emergency reports with AI-assisted priority clustering.
+      </p>
+    </div>
+    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+      <a href="{{ url_for('incidents.report') }}" class="btn btn-danger shadow-sm me-2">
+        <i class="bi bi-megaphone-fill me-1"></i>Report Incident
+      </a>
+      <button class="btn btn-outline-secondary" id="btn-locate-me">
+        <i class="bi bi-crosshair me-1"></i>My Location
+      </button>
+    </div>
+  </div>
+
+  <!-- Privacy & Safety Alert Banner -->
+  <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4" role="alert">
+    <i class="bi bi-shield-check fs-4 me-3 text-primary"></i>
+    <div class="small">
+      <strong>Public Privacy Protection Active:</strong> GPS coordinates shown to public citizens are generalized (~1 km grid) and personal submitter details are redacted to protect privacy and prevent vigilantism. Official responders and administrators view exact GPS coordinates and contact phone numbers.
+    </div>
+  </div>
+
+  <!-- Key Metrics Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="text-muted small text-uppercase fw-semibold">Mapped Incidents</div>
+        <div class="h3 fw-bold text-primary mb-0" id="stat-total">{{ stats.total_mapped }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="text-muted small text-uppercase fw-semibold">Active Incidents</div>
+        <div class="h3 fw-bold text-warning mb-0" id="stat-active">{{ stats.active_incidents }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="text-muted small text-uppercase fw-semibold">Critical Hotspots</div>
+        <div class="h3 fw-bold text-danger mb-0" id="stat-critical">{{ stats.critical_active }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map and Filters Container -->
+  <div class="row g-4">
+    <!-- Map Canvas -->
+    <div class="col-lg-9">
+      <!-- Filter Bar -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+          <form id="map-filter-form" class="row g-2 align-items-center">
+            <div class="col-md-5">
+              <div class="input-group input-group-sm">
+                <label class="input-group-text bg-light text-muted" for="filter-category">Category</label>
+                <select class="form-select form-select-sm" id="filter-category">
+                  <option value="all">All Disaster Categories</option>
+                  {% for cat in categories %}
+                  <option value="{{ cat }}">{{ cat }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-5">
+              <div class="input-group input-group-sm">
+                <label class="input-group-text bg-light text-muted" for="filter-status">Status</label>
+                <select class="form-select form-select-sm" id="filter-status">
+                  <option value="all">All Statuses</option>
+                  <option value="Submitted">Submitted (New)</option>
+                  <option value="Under Review">Under Review</option>
+                  <option value="Assigned">Assigned</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Resolved">Resolved</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-2 text-end">
+              <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="btn-reset-filters">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Map Element -->
+      <div class="position-relative">
+        <div id="incident-map"></div>
+        <div id="map-loader" class="position-absolute top-50 start-50 translate-middle bg-white p-3 rounded shadow d-none" style="z-index: 1000;">
+          <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+          <span>Loading spatial data...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar / Legend & Emergency Contacts -->
+    <div class="col-lg-3">
+      <!-- Map Legend -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white fw-bold py-3">
+          <i class="bi bi-palette text-primary me-2"></i>Map Legend
+        </div>
+        <div class="card-body">
+          <div class="small fw-bold text-muted text-uppercase mb-2">Priority Levels</div>
+          <div class="d-flex align-items-center mb-1">
+            <span class="legend-dot" style="background-color: #d90429;"></span>
+            <span class="small">Critical (Immediate Hazard)</span>
+          </div>
+          <div class="d-flex align-items-center mb-1">
+            <span class="legend-dot" style="background-color: #f77f00;"></span>
+            <span class="small">High Priority</span>
+          </div>
+          <div class="d-flex align-items-center mb-1">
+            <span class="legend-dot" style="background-color: #0077b6;"></span>
+            <span class="small">Medium Priority</span>
+          </div>
+          <div class="d-flex align-items-center mb-3">
+            <span class="legend-dot" style="background-color: #2b9348;"></span>
+            <span class="small">Low Priority / Informational</span>
+          </div>
+
+          <hr class="my-2">
+
+          <div class="small fw-bold text-muted text-uppercase mb-2">Incident Categories</div>
+          {% for cat, color in category_colors.items() %}
+          <div class="d-flex align-items-center mb-1">
+            <span class="legend-dot" style="background-color: {{ color }};"></span>
+            <span class="small text-truncate" title="{{ cat }}">{{ cat }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Emergency Hotlines -->
+      <div class="card border-0 shadow-sm bg-light">
+        <div class="card-body">
+          <h6 class="fw-bold text-danger mb-3">
+            <i class="bi bi-telephone-fill me-2"></i>National Emergency Helplines
+          </h6>
+          <ul class="list-unstyled mb-0 small">
+            <li class="mb-2 d-flex justify-content-between">
+              <span>National Emergency:</span>
+              <a href="tel:112" class="fw-bold text-danger text-decoration-none">112</a>
+            </li>
+            <li class="mb-2 d-flex justify-content-between">
+              <span>Fire Service:</span>
+              <a href="tel:101" class="fw-bold text-dark text-decoration-none">101</a>
+            </li>
+            <li class="mb-2 d-flex justify-content-between">
+              <span>Ambulance / Medical:</span>
+              <a href="tel:108" class="fw-bold text-dark text-decoration-none">108 / 102</a>
+            </li>
+            <li class="d-flex justify-content-between">
+              <span>Disaster Helpline (NDRF):</span>
+              <a href="tel:1078" class="fw-bold text-dark text-decoration-none">1078</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const mapElement = document.getElementById('incident-map');
+  if (!mapElement) return;
+
+  // Initialize Leaflet Map centered on default region
+  const defaultLat = 19.0760; // Mumbai / Regional default
+  const defaultLng = 72.8777;
+  const map = L.map('incident-map').setView([defaultLat, defaultLng], 11);
+
+  // Add OpenStreetMap Tile Layer
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | ResQAI'
+  }).addTo(map);
+
+  let markersLayer = L.layerGroup().addTo(map);
+  const loader = document.getElementById('map-loader');
+  const catSelect = document.getElementById('filter-category');
+  const statusSelect = document.getElementById('filter-status');
+  const resetBtn = document.getElementById('btn-reset-filters');
+  const locateBtn = document.getElementById('btn-locate-me');
+
+  function showLoader() { loader.classList.remove('d-none'); }
+  function hideLoader() { loader.classList.add('d-none'); }
+
+  // Load and render markers
+  function loadIncidents() {
+    showLoader();
+    const category = catSelect.value;
+    const status = statusSelect.value;
+    const url = `/api/map/incidents?category=${encodeURIComponent(category)}&status=${encodeURIComponent(status)}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        hideLoader();
+        markersLayer.clearLayers();
+
+        if (!data.incidents || data.incidents.length === 0) {
+          return;
+        }
+
+        const bounds = [];
+        data.incidents.forEach(inc => {
+          if (inc.latitude && inc.longitude) {
+            bounds.push([inc.latitude, inc.longitude]);
+
+            // Circle marker styled with priority color
+            const radius = inc.priority === 'Critical' ? 14 : 10;
+            const marker = L.circleMarker([inc.latitude, inc.longitude], {
+              radius: radius,
+              fillColor: inc.priority_color || '#e63946',
+              color: '#ffffff',
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.85
+            });
+
+            // Popup content
+            const approxBadge = inc.is_approximate ? 
+              '<span class="badge bg-secondary ms-1" title="Privacy preserved GPS">Approx. GPS</span>' : 
+              '<span class="badge bg-success ms-1" title="Exact GPS Fix">Exact GPS</span>';
+
+            const popupHtml = `
+              <div style="min-width: 220px; font-family: inherit;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <strong class="text-navy">${inc.incident_id}</strong>
+                  ${approxBadge}
+                </div>
+                <div class="mb-2">
+                  <span class="badge bg-${inc.priority_badge_class}">${inc.priority}</span>
+                  <span class="badge bg-${inc.badge_class}">${inc.status}</span>
+                </div>
+                <div class="fw-semibold small text-dark mb-1">${inc.category}</div>
+                <p class="small text-muted mb-2" style="max-height: 80px; overflow-y: auto;">
+                  ${inc.description}
+                </p>
+                <div class="small text-muted mb-2">
+                  <i class="bi bi-geo-alt me-1"></i>${inc.location_address}
+                </div>
+                ${inc.contact_name ? `<div class="small text-muted mb-2"><i class="bi bi-person me-1"></i>${inc.contact_name}</div>` : ''}
+                <div class="border-top pt-2 text-end">
+                  <a href="/incidents/${inc.incident_id}" class="btn btn-xs btn-outline-primary py-1 px-2" style="font-size: 0.75rem;">
+                    View Incident Tracking &rarr;
+                  </a>
+                </div>
+              </div>
+            `;
+            marker.bindPopup(popupHtml);
+            markersLayer.addLayer(marker);
+          }
+        });
+
+        if (bounds.length > 0) {
+          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+        }
+      })
+      .catch(err => {
+        hideLoader();
+        console.error('Error fetching incident spatial data:', err);
+      });
+  }
+
+  // Filter change handlers
+  catSelect.addEventListener('change', loadIncidents);
+  statusSelect.addEventListener('change', loadIncidents);
+
+  resetBtn.addEventListener('click', function() {
+    catSelect.value = 'all';
+    statusSelect.value = 'all';
+    loadIncidents();
+  });
+
+  // User Geolocation
+  locateBtn.addEventListener('click', function() {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    locateBtn.disabled = true;
+    locateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Locating...';
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        locateBtn.disabled = false;
+        locateBtn.innerHTML = '<i class="bi bi-crosshair me-1"></i>My Location';
+        const userLat = pos.coords.latitude;
+        const userLng = pos.coords.longitude;
+        map.setView([userLat, userLng], 14);
+
+        L.circle([userLat, userLng], {
+          radius: pos.coords.accuracy || 100,
+          color: '#0077b6',
+          fillColor: '#90e0ef',
+          fillOpacity: 0.3
+        }).addTo(map);
+
+        L.marker([userLat, userLng])
+          .addTo(map)
+          .bindPopup('<b>Your Current Location</b>')
+          .openPopup();
+      },
+      err => {
+        locateBtn.disabled = false;
+        locateBtn.innerHTML = '<i class="bi bi-crosshair me-1"></i>My Location';
+        alert('Unable to retrieve your location. Please ensure location permissions are enabled.');
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  });
+
+  // Initial load
+  loadIncidents();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Incident {{ report.incident_id }} — ResQAI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Top Navigation & Status Bar -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <a href="{{ url_for('incidents.my_reports') if current_user.is_authenticated else url_for('main.index') }}" class="small text-decoration-none text-muted">
+        &larr; Back to Reports
+      </a>
+      <h3 class="fw-bold mb-0 mt-1">Incident Report: {{ report.incident_id }}</h3>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge priority-badge-{{ report.ai_suggested_priority|lower }} px-3 py-2 fs-6">
+        Priority: {{ report.ai_suggested_priority }}
+      </span>
+      <span class="badge bg-{{ report.badge_class }} px-3 py-2 fs-6">
+        Status: {{ report.status }}
+      </span>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Details & Translations -->
+    <div class="col-lg-7">
+      <div class="resq-card p-4 mb-4">
+        <h5 class="fw-bold mb-3 d-flex align-items-center justify-content-between">
+          <span>Incident Description</span>
+          <span class="badge bg-light text-dark border small">Language: {{ report.original_language.upper() }}</span>
+        </h5>
+
+        <div class="p-3 bg-light rounded-3 border mb-3">
+          <label class="fw-semibold text-muted small mb-1">Original Report (Citizen Input):</label>
+          <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ report.description }}</p>
+        </div>
+
+        {% if report.translated_description and report.original_language != 'en' %}
+          <div class="p-3 bg-white rounded-3 border border-primary border-opacity-25 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="fw-semibold text-primary small mb-0"><i class="bi bi-translate me-1"></i> English Translation for Responders:</label>
+              {% if report.translation_confidence %}
+                <span class="badge bg-primary bg-opacity-10 text-primary small">Confidence: {{ (report.translation_confidence * 100)|int }}%</span>
+              {% endif %}
+            </div>
+            <p class="mb-0 text-dark small" style="white-space: pre-wrap;">{{ report.translated_description }}</p>
+          </div>
+        {% endif %}
+
+        {% if report.ai_classification_explanation %}
+          <div class="p-3 bg-light rounded-3 border small">
+            <div class="fw-bold text-dark mb-1"><i class="bi bi-cpu-fill text-primary me-1"></i> AI Triage Assessment:</div>
+            <div class="text-secondary">{{ report.ai_classification_explanation }}</div>
+          </div>
+        {% endif %}
+
+        {% if report.image_filename %}
+          <div class="mt-4">
+            <h6 class="fw-bold mb-2">Uploaded Scene Evidence</h6>
+            <img src="{{ url_for('static', filename='uploads/' + report.image_filename) }}" alt="Incident Scene" class="img-fluid rounded-3 border shadow-sm" style="max-height: 350px;">
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Responder Field Notes (if any) -->
+      {% if report.responder_notes %}
+        <div class="resq-card p-4 border-info">
+          <h5 class="fw-bold text-dark mb-2"><i class="bi bi-clipboard2-check-fill text-info me-2"></i> Field Operations Log</h5>
+          <p class="text-secondary small mb-0" style="white-space: pre-wrap;">{{ report.responder_notes }}</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: Status Timeline & Location -->
+    <div class="col-lg-5">
+      <!-- Incident Status Timeline -->
+      <div class="resq-card p-4 mb-4">
+        <h5 class="fw-bold mb-3">Status Progression Timeline</h5>
+        <ul class="timeline-track ps-0">
+          {% for step in history %}
+            <li class="timeline-item">
+              <div class="timeline-dot {% if step.new_status == 'Resolved' %}success{% endif %}"></div>
+              <div class="d-flex justify-content-between align-items-center">
+                <strong class="text-dark">{{ step.new_status }}</strong>
+                <span class="text-muted small">{{ step.created_at.strftime('%b %d, %H:%M') }}</span>
+              </div>
+              {% if step.notes %}
+                <p class="text-secondary small mb-0 mt-1">{{ step.notes }}</p>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Location & Affected People -->
+      <div class="resq-card p-4 mb-4">
+        <h5 class="fw-bold mb-3">Location & On-Scene Information</h5>
+        <ul class="list-unstyled small text-secondary d-flex flex-column gap-2 mb-3">
+          <li><strong>Reported Address:</strong> {{ report.location_address or 'Not specified' }}</li>
+          <li><strong>Estimated Affected:</strong> {{ report.affected_count }} persons</li>
+          <li><strong>On-Scene Contact:</strong> {{ report.contact_name or 'Anonymous citizen' }}</li>
+          <li><strong>Contact Phone:</strong> {{ report.contact_phone or 'None provided' }}</li>
+          {% if report.latitude and report.longitude %}
+            <li><strong>GPS Coordinates:</strong> <code>{{ report.latitude }}, {{ report.longitude }}</code></li>
+          {% endif %}
+        </ul>
+
+        {% if report.latitude and report.longitude %}
+          <a href="https://www.google.com/maps?q={{ report.latitude }},{{ report.longitude }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm w-100 fw-semibold">
+            <i class="bi bi-geo-alt-fill me-1"></i> Open Location in Google Maps
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Emergency Helpline Reminder -->
+      <div class="p-3 bg-danger bg-opacity-10 border border-danger rounded-3 text-center">
+        <div class="fw-bold text-danger mb-1"><i class="bi bi-telephone-fill me-1"></i> Urgent Life-Saving Help</div>
+        <p class="small text-muted mb-2">If condition is deteriorating rapidly, call National Emergency.</p>
+        <a href="tel:112" class="btn btn-danger btn-sm fw-bold w-100">Dial 112 (Pan-India)</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

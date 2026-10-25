@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Console — ResQAI Command & Control{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Admin Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <span class="badge bg-danger mb-1"><i class="bi bi-shield-lock-fill"></i> System Administrator Console</span>
+      <h2 class="fw-bold mb-0">Emergency Command & Control</h2>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('admin.export_incidents_csv') }}" class="btn btn-outline-dark btn-sm fw-semibold">
+        <i class="bi bi-file-earmark-arrow-down me-1"></i> Export Incidents CSV
+      </a>
+      <a href="{{ url_for('admin.create_alert') }}" class="btn btn-resq-urgent btn-sm fw-bold">
+        <i class="bi bi-broadcast me-1"></i> Dispatch Emergency Alert
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Cards Grid -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="resq-card p-3 stat-card">
+        <div class="text-muted small fw-semibold text-uppercase">Total Incidents</div>
+        <div class="d-flex justify-content-between align-items-center mt-1">
+          <h3 class="fw-bold mb-0 text-dark">{{ stats.total_incidents }}</h3>
+          <span class="fs-2 text-primary opacity-50"><i class="bi bi-activity"></i></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="resq-card p-3 stat-card urgent">
+        <div class="text-muted small fw-semibold text-uppercase">Critical / High Flagged</div>
+        <div class="d-flex justify-content-between align-items-center mt-1">
+          <h3 class="fw-bold mb-0 text-danger">{{ stats.high_priority }}</h3>
+          <span class="fs-2 text-danger opacity-50"><i class="bi bi-exclamation-triangle-fill"></i></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="resq-card p-3 stat-card warning">
+        <div class="text-muted small fw-semibold text-uppercase">In Progress Operations</div>
+        <div class="d-flex justify-content-between align-items-center mt-1">
+          <h3 class="fw-bold mb-0 text-warning">{{ stats.in_progress }}</h3>
+          <span class="fs-2 text-warning opacity-50"><i class="bi bi-truck"></i></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="resq-card p-3 stat-card success">
+        <div class="text-muted small fw-semibold text-uppercase">Resolved Emergencies</div>
+        <div class="d-flex justify-content-between align-items-center mt-1">
+          <h3 class="fw-bold mb-0 text-success">{{ stats.resolved }}</h3>
+          <span class="fs-2 text-success opacity-50"><i class="bi bi-check-circle-fill"></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary Metrics: Alerts & Users -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="resq-card p-3 d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small">Active Public Alerts</div>
+          <h4 class="fw-bold text-dark mb-0">{{ stats.active_alerts }} / {{ stats.total_alerts }} total</h4>
+        </div>
+        <a href="{{ url_for('admin.alerts') }}" class="btn btn-sm btn-outline-danger">Manage Alerts</a>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="resq-card p-3 d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small">Registered Accounts</div>
+          <h4 class="fw-bold text-dark mb-0">{{ stats.total_users }} Users</h4>
+        </div>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-outline-primary">Manage Users</a>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="resq-card p-3 d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small">Visual Analytics</div>
+          <h4 class="fw-bold text-dark mb-0">Charts & Trends</h4>
+        </div>
+        <a href="{{ url_for('admin.analytics') }}" class="btn btn-sm btn-outline-info text-dark">Open Analytics</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Incidents Triage Table -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="resq-card p-4 h-100 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Incident Triage Queue</h5>
+          <a href="{{ url_for('admin.incidents') }}" class="small text-decoration-none">View All Incidents &rarr;</a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Category</th>
+                <th>AI Priority</th>
+                <th>Status</th>
+                <th>Location</th>
+                <th>Time</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for inc in recent_incidents %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('admin.incident_detail', incident_id=inc.incident_id) }}" class="fw-bold text-decoration-none">
+                      {{ inc.incident_id }}
+                    </a>
+                  </td>
+                  <td class="text-capitalize">{{ inc.category.replace('_', ' ') }}</td>
+                  <td>
+                    <span class="badge priority-badge-{{ inc.ai_suggested_priority|lower }}">
+                      {{ inc.ai_suggested_priority }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-{{ inc.badge_class }}">{{ inc.status }}</span>
+                  </td>
+                  <td class="text-truncate" style="max-width: 140px;">
+                    {{ inc.location_address or 'Coordinates provided' }}
+                  </td>
+                  <td class="text-muted">{{ inc.created_at.strftime('%H:%M') }}</td>
+                  <td>
+                    <a href="{{ url_for('admin.incident_detail', incident_id=inc.incident_id) }}" class="btn btn-sm btn-outline-dark py-0 px-2">
+                      Review
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security & Operational Audit Log Side-panel -->
+    <div class="col-lg-4">
+      <div class="resq-card p-4 h-100 shadow-sm">
+        <h5 class="fw-bold mb-3">Security Audit Trail</h5>
+        <div class="list-group list-group-flush small">
+          {% for audit in recent_audits %}
+            <div class="list-group-item px-0 py-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-secondary font-monospace" style="font-size:0.65rem;">{{ audit.action }}</span>
+                <span class="text-muted" style="font-size:0.75rem;">{{ audit.created_at.strftime('%H:%M • %b %d') }}</span>
+              </div>
+              <div class="text-dark">{{ audit.details }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

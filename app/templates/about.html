@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}About ResQAI — System Architecture & Mission{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="max-w-700 mx-auto text-center mb-5">
+    <span class="badge bg-primary bg-opacity-10 text-primary fw-bold text-uppercase px-3 py-1 mb-2">Academic & Engineering Overview</span>
+    <h2 class="fw-bold">ResQAI Platform Architecture</h2>
+    <p class="text-muted">
+      Diploma in Computer Engineering Final Year Project: AI-Powered Multilingual Emergency Triage and Offline Disaster Support System.
+    </p>
+  </div>
+
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-8">
+      <div class="resq-card p-4 mb-4">
+        <h4 class="fw-bold mb-3">Project Mission</h4>
+        <p class="text-secondary">
+          During large-scale floods, cyclones, and earthquakes, cellular networks degrade and central call centers experience severe call congestion. Non-native speakers encounter critical language barriers when describing injuries, and victims with limited battery life or spotty network coverage cannot wait on hold.
+        </p>
+        <p class="text-secondary">
+          ResQAI bridges this gap with an <strong>Offline-First Progressive Web App</strong> paired with <strong>Zero-Latency Deterministic Rule Triage</strong> and pluggable <strong>Large Language Models (Google Gemini)</strong>. It allows affected citizens to report hazards in 14 languages, queues drafts in client-side IndexedDB, and synchronizes securely with emergency coordinators as soon as intermittent connectivity flickers back.
+        </p>
+      </div>
+
+      <div class="resq-card p-4 mb-4">
+        <h5 class="fw-bold mb-3">Technical Stack Breakdown</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered small">
+            <thead class="table-light">
+              <tr>
+                <th>Tier</th>
+                <th>Technology</th>
+                <th>Architectural Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fw-bold">Frontend</td>
+                <td>HTML5, CSS3, JavaScript, Bootstrap 5, Chart.js</td>
+                <td>Lightweight, accessible, mobile-responsive UI with Inter typography and RTL layout support.</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">Offline & PWA</td>
+                <td>Service Worker, Cache API, IndexedDB</td>
+                <td>Caches survival guide and app shell; queues reports with UUID idempotency keys for zero duplication.</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">Backend</td>
+                <td>Python 3.12/3.14, Flask, Werkzeug, Flask-WTF</td>
+                <td>Modular Blueprint architecture, CSRF protection, secure password hashing, and session management.</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">Database</td>
+                <td>SQLAlchemy ORM with SQLite (PostgreSQL-ready)</td>
+                <td>Strict relationships, audit logging, status history tracking, and transactional broadcast queues.</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">AI Triage</td>
+                <td>Pluggable Google Gemini API + Rule-Based Fallback</td>
+                <td>Zero-latency offline classification for 10 hazard categories and 4 urgency tiers with safety bounds.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="resq-card p-4 border-warning">
+        <h5 class="fw-bold text-dark mb-2"><i class="bi bi-shield-exclamation text-warning me-2"></i> Ethical & Safety Guardrails</h5>
+        <ul class="small text-secondary ps-3 mb-0">
+          <li><strong>Auxiliary Platform:</strong> ResQAI does NOT replace official telecommunication emergency numbers (112, 100, 101, 102).</li>
+          <li><strong>No Hallucinated Commitments:</strong> The system never tells a user that a rescue team has arrived unless confirmed by an authorized coordinator.</li>
+          <li><strong>Strict Medical Scope:</strong> AI triage does not diagnose illnesses or recommend prescription medication; it provides basic first aid guidance and urges professional care.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

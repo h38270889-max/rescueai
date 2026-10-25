@@ -1,0 +1,61 @@
+{
+  "app_name": "ResQAI",
+  "tagline": "Système de triage d'urgence multilingue basé sur l'IA et assistance hors ligne en cas de catastrophe",
+  "nav_home": "Accueil",
+  "nav_features": "Fonctionnalités",
+  "nav_how_it_works": "Comment ça marche",
+  "nav_chat": "Assistant d'urgence",
+  "nav_report": "Signaler une urgence",
+  "nav_alerts": "Alertes en direct",
+  "nav_dashboard": "Tableau de bord",
+  "nav_admin": "Console Admin",
+  "nav_responder": "Espace Secouristes",
+  "nav_login": "Connexion",
+  "nav_register": "Inscription",
+  "nav_logout": "Déconnexion",
+  "nav_profile": "Mon profil",
+  "nav_offline_guide": "Guide de survie",
+  
+  "hero_badge": "Réponse aux urgences et triage des catastrophes",
+  "hero_title": "Triage d'urgence par IA dans toutes les langues, en ligne ou hors ligne",
+  "hero_subtitle": "ResQAI connecte les personnes sinistrées aux coordinateurs de secours lors d'inondations, incendies, séismes ou urgences médicales.",
+  "hero_cta_report": "Signaler une urgence",
+  "hero_cta_chat": "Discuter avec l'assistant ResQAI",
+  "hero_quick_call": "Numéro d'urgence : Appelez le 112",
+
+  "section_features_title": "Conçu pour les situations de crise",
+  "section_features_subtitle": "Résilience hors ligne, triage intelligent et communication multicanale.",
+
+  "feature_ai_title": "Triage d'urgence par IA",
+  "feature_ai_desc": "Analyse immédiate de la description de l'incident et consignes de sécurité prioritaires.",
+
+  "feature_multilingual_title": "14 langues régionales et internationales",
+  "feature_multilingual_desc": "Communiquez en français, anglais, hindi, espagnol, arabe et plus.",
+
+  "feature_offline_title": "Résilience hors ligne (PWA)",
+  "feature_offline_desc": "Enregistrement local sur IndexedDB en cas de panne réseau; synchronisation automatique au rétablissement.",
+
+  "feature_broadcast_title": "Alertes ciblées",
+  "feature_broadcast_desc": "Diffusion rapide d'alertes par zone géographique ou type de sinistre.",
+
+  "feature_responder_title": "Espace Secouristes",
+  "feature_responder_desc": "Coordonnées GPS, traduction et suivi des opérations en temps réel.",
+
+  "feature_security_title": "Sécurité et confidentialité",
+  "feature_security_desc": "Contrôle d'accès basé sur les rôles, hachage des mots de passe et journal d'audit complet.",
+
+  "status_online": "Connecté / En ligne",
+  "status_offline": "Mode hors ligne actif",
+  "sync_pending": "Rapports en attente de synchronisation",
+  "sync_now": "Synchroniser maintenant",
+
+  "disclaimer_heading": "Avis important sur les secours",
+  "disclaimer_body": "ResQAI est une plateforme auxiliaire d'aide et de triage. Elle ne remplace PAS les services publics d'urgence (112). En cas d'urgence vitale, appelez directement le 112.",
+
+  "btn_submit": "Envoyer",
+  "btn_cancel": "Annuler",
+  "btn_save": "Enregistrer",
+  "btn_delete": "Supprimer",
+  "btn_view": "Voir les détails",
+  "btn_back": "Retour"
+}

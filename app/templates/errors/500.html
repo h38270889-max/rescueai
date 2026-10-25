@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error (500) — ResQAI{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="max-w-700 mx-auto py-5">
+    <div class="d-inline-flex p-3 rounded-circle bg-danger bg-opacity-10 text-danger mb-3">
+      <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+    </div>
+    <h1 class="display-5 fw-bold text-dark">500 — Internal Server Error</h1>
+    <p class="lead text-muted mb-4">
+      An unexpected operational error occurred while processing your request. If you are in immediate life-threatening danger, do not wait — call <strong>112</strong> right now.
+    </p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{{ url_for('main.index') }}" class="btn btn-outline-dark">&larr; Return to Home</a>
+      <a href="tel:112" class="btn btn-danger fw-bold"><i class="bi bi-telephone-fill me-1"></i> Dial 112</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

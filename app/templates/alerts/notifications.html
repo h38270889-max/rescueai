@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Notifications — ResQAI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="fw-bold mb-1">Notification Center</h2>
+      <p class="text-muted small mb-0">Emergency broadcasts and status updates dispatched to your account.</p>
+    </div>
+    {% if notifications %}
+      <form method="POST" action="{{ url_for('alerts.mark_all_read') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-check2-all me-1"></i> Mark All as Read
+        </button>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="resq-card p-4 shadow-sm">
+    {% if notifications %}
+      <div class="list-group list-group-flush">
+        {% for n in notifications %}
+          <div class="list-group-item d-flex justify-content-between align-items-start py-3 px-2 {% if not n.is_read %}bg-light border-start border-4 border-primary{% endif %}">
+            <div class="me-3">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                {% if not n.is_read %}
+                  <span class="badge bg-primary">New</span>
+                {% endif %}
+                <h6 class="fw-bold mb-0 text-dark">{{ n.title }}</h6>
+              </div>
+              <p class="text-secondary small mb-1">{{ n.message }}</p>
+              <div class="small text-muted">
+                <i class="bi bi-clock me-1"></i> {{ n.created_at.strftime('%b %d, %Y • %H:%M') }}
+                &bull; Channel: <code>{{ n.delivery_channel }}</code>
+              </div>
+            </div>
+            <div class="text-nowrap">
+              {% if not n.is_read %}
+                <form method="POST" action="{{ url_for('alerts.mark_read', notification_id=n.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2" title="Mark as Read">
+                    <i class="bi bi-check"></i>
+                  </button>
+                </form>
+              {% endif %}
+              {% if n.incident_id and n.incident %}
+                <a href="{{ url_for('incidents.detail', incident_id=n.incident.incident_id) }}" class="btn btn-sm btn-primary py-0 px-2 ms-1">
+                  View Report
+                </a>
+              {% elif n.alert_id and n.alert %}
+                <a href="{{ url_for('alerts.detail', alert_id=n.alert.alert_id) }}" class="btn btn-sm btn-danger py-0 px-2 ms-1">
+                  View Alert
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-bell-slash fs-1 opacity-25"></i>
+        <h5 class="mt-3">No notifications right now</h5>
+        <p class="small text-muted">When emergency broadcasts or updates on your reports are issued, they will appear here.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

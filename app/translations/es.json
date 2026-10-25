@@ -1,0 +1,61 @@
+{
+  "app_name": "ResQAI",
+  "tagline": "Sistema de triaje de emergencias multilingüe impulsado por IA y soporte sin conexión para desastres",
+  "nav_home": "Inicio",
+  "nav_features": "Características",
+  "nav_how_it_works": "Cómo Funciona",
+  "nav_chat": "Asistente de Emergencia",
+  "nav_report": "Reportar Emergencia",
+  "nav_alerts": "Alertas en Vivo",
+  "nav_dashboard": "Panel de Control",
+  "nav_admin": "Panel de Administración",
+  "nav_responder": "Panel de Rescatistas",
+  "nav_login": "Iniciar Sesión",
+  "nav_register": "Registrarse",
+  "nav_logout": "Cerrar Sesión",
+  "nav_profile": "Mi Perfil",
+  "nav_offline_guide": "Guía de Supervivencia",
+  
+  "hero_badge": "Respuesta a Emergencias y Triaje de Desastres",
+  "hero_title": "Triaje de Emergencia con IA en Cualquier Idioma, Con o Sin Conexión",
+  "hero_subtitle": "ResQAI conecta a personas afectadas con coordinadores de emergencia durante inundaciones, incendios, terremotos y urgencias médicas.",
+  "hero_cta_report": "Reportar una Emergencia",
+  "hero_cta_chat": "Hablar con Asistente ResQAI",
+  "hero_quick_call": "Línea de Emergencia: Llame al 112",
+
+  "section_features_title": "Diseñado para Situaciones Críticas de Desastre",
+  "section_features_subtitle": "Resiliencia sin conexión, triaje inteligente y comunicación multicanal.",
+
+  "feature_ai_title": "Triaje de Emergencia con IA",
+  "feature_ai_desc": "Analiza al instante la descripción del incidente y proporciona pautas de seguridad paso a paso.",
+
+  "feature_multilingual_title": "14 Idiomas Regionales y Globales",
+  "feature_multilingual_desc": "Comuníquese naturalmente en español, inglés, hindi, francés, árabe y más.",
+
+  "feature_offline_title": "Capacidad Sin Conexión (PWA)",
+  "feature_offline_desc": "Guarde informes localmente en IndexedDB si cae la red; se sincronizan automáticamente al recuperar señal.",
+
+  "feature_broadcast_title": "Alertas de Emergencia Dirigidas",
+  "feature_broadcast_desc": "Difusión rápida de avisos dirigidos geográficamente o por tipo de catástrofe.",
+
+  "feature_responder_title": "Flujo de Trabajo para Rescatistas",
+  "feature_responder_desc": "Ubicación GPS precisa, traducción de mensajes y seguimiento operativo.",
+
+  "feature_security_title": "Seguro y Privado",
+  "feature_security_desc": "Control de acceso basado en roles, cifrado de contraseñas y auditoría completa.",
+
+  "status_online": "Conectado / En Línea",
+  "status_offline": "Modo Sin Conexión Activo",
+  "sync_pending": "Reportes pendientes de sincronizar",
+  "sync_now": "Sincronizar Ahora",
+
+  "disclaimer_heading": "Aviso Oficial de Seguridad y Emergencias",
+  "disclaimer_body": "ResQAI es una plataforma auxiliar de asistencia y triaje. NO reemplaza los servicios oficiales de emergencia (112). Ante peligro vital inmediato, llame al 112.",
+
+  "btn_submit": "Enviar",
+  "btn_cancel": "Cancelar",
+  "btn_save": "Guardar",
+  "btn_delete": "Eliminar",
+  "btn_view": "Ver Detalles",
+  "btn_back": "Volver"
+}

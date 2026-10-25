@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}User Directory & Roles — ResQAI Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <a href="{{ url_for('admin.dashboard') }}" class="small text-decoration-none text-muted">&larr; Back to Admin Overview</a>
+      <h2 class="fw-bold mb-0 mt-1">User Directory & Role Administration</h2>
+      <p class="text-muted small mb-0">Manage registered citizens, assign field responders, and control system access.</p>
+    </div>
+  </div>
+
+  <div class="resq-card p-4 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Region</th>
+            <th>Lang</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Role Assignment</th>
+            <th>Account Access</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+            <tr>
+              <td>{{ u.id }}</td>
+              <td><strong>{{ u.full_name }}</strong></td>
+              <td>{{ u.email }}</td>
+              <td>{{ u.region or 'General' }}</td>
+              <td><span class="badge bg-light text-dark border">{{ u.preferred_language.upper() }}</span></td>
+              <td>
+                {% if u.role == 'admin' %}
+                  <span class="badge bg-danger">Administrator</span>
+                {% elif u.role == 'responder' %}
+                  <span class="badge bg-primary">Responder</span>
+                {% else %}
+                  <span class="badge bg-secondary">Citizen</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if u.is_active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-danger">Deactivated</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if u.id != current_user.id %}
+                  <form method="POST" action="{{ url_for('admin.set_user_role', user_id=u.id) }}" class="d-flex gap-1 align-items-center">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <select name="role" class="form-select form-select-sm py-0" style="width: auto;">
+                      <option value="user" {% if u.role == 'user' %}selected{% endif %}>Citizen</option>
+                      <option value="responder" {% if u.role == 'responder' %}selected{% endif %}>Responder</option>
+                      <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-dark py-0 px-2" title="Apply Role Change">Update</button>
+                  </form>
+                {% else %}
+                  <span class="text-muted small">Current Admin</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if u.id != current_user.id %}
+                  <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if u.is_active %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">Deactivate</button>
+                    {% else %}
+                      <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2">Activate</button>
+                    {% endif %}
+                  </form>
+                {% else %}
+                  <span class="text-muted small">&mdash;</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

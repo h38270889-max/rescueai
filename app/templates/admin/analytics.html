@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Analytics & Insights — ResQAI Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <a href="{{ url_for('admin.dashboard') }}" class="small text-decoration-none text-muted">&larr; Back to Admin Overview</a>
+      <h2 class="fw-bold mb-0 mt-1">Disaster Intelligence & Analytics</h2>
+      <p class="text-muted small mb-0">Quantitative operational data and trends generated dynamically from live incident records.</p>
+    </div>
+    <a href="{{ url_for('admin.export_incidents_csv') }}" class="btn btn-outline-dark btn-sm fw-semibold">
+      <i class="bi bi-file-earmark-arrow-down me-1"></i> Export Incident Dataset
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Chart 1: Incidents by Category -->
+    <div class="col-lg-6">
+      <div class="resq-card p-4 h-100 shadow-sm">
+        <h5 class="fw-bold mb-3 d-flex align-items-center justify-content-between">
+          <span>Incidents by Category</span>
+          <span class="badge bg-light text-dark border small">Disaster Breakdown</span>
+        </h5>
+        <div style="height: 300px; position: relative;">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart 2: Incidents by Status -->
+    <div class="col-lg-6">
+      <div class="resq-card p-4 h-100 shadow-sm">
+        <h5 class="fw-bold mb-3 d-flex align-items-center justify-content-between">
+          <span>Operational Status Distribution</span>
+          <span class="badge bg-light text-dark border small">Workflow Funnel</span>
+        </h5>
+        <div style="height: 300px; position: relative;">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart 3: Incidents by Priority -->
+    <div class="col-lg-6">
+      <div class="resq-card p-4 h-100 shadow-sm">
+        <h5 class="fw-bold mb-3 d-flex align-items-center justify-content-between">
+          <span>AI Urgency Triage Priority</span>
+          <span class="badge bg-light text-dark border small">Triage Levels</span>
+        </h5>
+        <div style="height: 300px; position: relative;">
+          <canvas id="priorityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart 4: Language Distribution -->
+    <div class="col-lg-6">
+      <div class="resq-card p-4 h-100 shadow-sm">
+        <h5 class="fw-bold mb-3 d-flex align-items-center justify-content-between">
+          <span>Incident Language Distribution</span>
+          <span class="badge bg-light text-dark border small">Multilingual Intake</span>
+        </h5>
+        <div style="height: 300px; position: relative;">
+          <canvas id="languageChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const categoryData = {{ category_data | tojson }};
+  const statusData = {{ status_data | tojson }};
+  const priorityData = {{ priority_data | tojson }};
+  const languageData = {{ language_data | tojson }};
+
+  // 1. Category Chart (Doughnut)
+  new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(categoryData).map(k => k.replace('_', ' ').toUpperCase()),
+      datasets: [{
+        data: Object.values(categoryData),
+        backgroundColor: ['#dc2626', '#2563eb', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#64748b']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  // 2. Status Chart (Bar)
+  new Chart(document.getElementById('statusChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(statusData),
+      datasets: [{
+        label: 'Number of Incidents',
+        data: Object.values(statusData),
+        backgroundColor: '#0d2b45'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // 3. Priority Chart (Pie)
+  new Chart(document.getElementById('priorityChart'), {
+    type: 'pie',
+    data: {
+      labels: Object.keys(priorityData),
+      datasets: [{
+        data: Object.values(priorityData),
+        backgroundColor: ['#dc2626', '#ea580c', '#38bdf8', '#94a3b8']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  // 4. Language Chart (Bar)
+  new Chart(document.getElementById('languageChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(languageData).map(k => k.toUpperCase()),
+      datasets: [{
+        label: 'Reports Filed',
+        data: Object.values(languageData),
+        backgroundColor: '#2563eb'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+});
+</script>
+{% endblock %}

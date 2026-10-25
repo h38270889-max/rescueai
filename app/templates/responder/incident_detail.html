@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Responder Operations — {{ report.incident_id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <a href="{{ url_for('responder.dashboard') }}" class="small text-decoration-none text-muted">&larr; Back to Responder Desk</a>
+      <h3 class="fw-bold mb-0 mt-1">Field Operations: {{ report.incident_id }}</h3>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge priority-badge-{{ report.ai_suggested_priority|lower }} px-3 py-2 fs-6">
+        Priority: {{ report.ai_suggested_priority }}
+      </span>
+      <span class="badge bg-{{ report.badge_class }} px-3 py-2 fs-6">
+        Status: {{ report.status }}
+      </span>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Incident Description & Translation -->
+    <div class="col-lg-7">
+      <div class="resq-card p-4 mb-4">
+        <h5 class="fw-bold mb-3 d-flex justify-content-between align-items-center">
+          <span>Citizen Report & Translation</span>
+          <span class="badge bg-light text-dark border">Original: {{ report.original_language.upper() }}</span>
+        </h5>
+
+        <div class="p-3 bg-light rounded-3 border mb-3">
+          <label class="fw-semibold text-muted small mb-1">Original Text:</label>
+          <p class="text-dark mb-0" style="white-space: pre-wrap;">{{ report.description }}</p>
+        </div>
+
+        {% if report.translated_description and report.original_language != 'en' %}
+          <div class="p-3 bg-white rounded-3 border border-primary border-opacity-25 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="fw-semibold text-primary small mb-0"><i class="bi bi-translate me-1"></i> English Translation for Responders:</label>
+              {% if report.translation_confidence %}
+                <span class="badge bg-primary bg-opacity-10 text-primary small">Confidence: {{ (report.translation_confidence * 100)|int }}%</span>
+              {% endif %}
+            </div>
+            <p class="text-dark small mb-0" style="white-space: pre-wrap;">{{ report.translated_description }}</p>
+          </div>
+        {% endif %}
+
+        {% if report.image_filename %}
+          <div class="mt-3">
+            <label class="fw-semibold small text-muted mb-2">Scene Photo:</label>
+            <img src="{{ url_for('static', filename='uploads/' + report.image_filename) }}" alt="Scene" class="img-fluid rounded-3 border" style="max-height: 350px;">
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Responder Update Form -->
+      <div class="resq-card p-4 border-primary">
+        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-pencil-square me-1"></i> Update Field Operations Status</h5>
+        <form method="POST" action="{{ url_for('responder.incident_detail', incident_id=report.incident_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small" for="status">Operational Status</label>
+            <select name="status" id="status" class="form-select fw-semibold">
+              <option value="Assigned" {% if report.status == 'Assigned' %}selected{% endif %}>Assigned (Responder Dispatched)</option>
+              <option value="In Progress" {% if report.status == 'In Progress' %}selected{% endif %}>In Progress (On Scene / Active Rescue)</option>
+              <option value="Resolved" {% if report.status == 'Resolved' %}selected{% endif %}>Resolved (Victims Secured / Hazard Cleared)</option>
+              <option value="Closed" {% if report.status == 'Closed' %}selected{% endif %}>Closed</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small" for="notes">Field Log / Operations Notes</label>
+            <textarea name="notes" id="notes" rows="3" class="form-control" placeholder="Log real-time responder updates (e.g. Unit 4 on scene, 2 victims transported to civil hospital...)">{{ report.responder_notes or '' }}</textarea>
+            <div class="form-text small">Notes are recorded in the incident history and notified to the citizen.</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary fw-semibold px-4">
+            <i class="bi bi-check2-circle me-1"></i> Update Operations & Notify Citizen
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Location, Coordinates, Contact & History -->
+    <div class="col-lg-5">
+      <div class="resq-card p-4 mb-4">
+        <h5 class="fw-bold mb-3">Location & Contact Dispatch</h5>
+        <ul class="list-unstyled small text-secondary d-flex flex-column gap-2 mb-3">
+          <li><strong>Location Address:</strong> {{ report.location_address or 'No manual address specified' }}</li>
+          <li><strong>Affected Count:</strong> {{ report.affected_count }} persons</li>
+          <li><strong>On-Scene Contact:</strong> {{ report.contact_name or 'Anonymous' }}</li>
+          <li>
+            <strong>Contact Phone:</strong> 
+            {% if report.contact_phone %}
+              <a href="tel:{{ report.contact_phone }}" class="text-danger fw-bold text-decoration-none">
+                <i class="bi bi-telephone-fill me-1"></i> {{ report.contact_phone }}
+              </a>
+            {% else %}
+              None provided
+            {% endif %}
+          </li>
+          {% if report.latitude and report.longitude %}
+            <li><strong>GPS Coordinates:</strong> <code>{{ report.latitude }}, {{ report.longitude }}</code></li>
+          {% endif %}
+        </ul>
+
+        {% if report.latitude and report.longitude %}
+          <a href="https://www.google.com/maps?q={{ report.latitude }},{{ report.longitude }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm w-100 fw-semibold">
+            <i class="bi bi-geo-alt-fill me-1"></i> Open Location in Google Maps
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Progression Timeline -->
+      <div class="resq-card p-4">
+        <h5 class="fw-bold mb-3">Incident Timeline</h5>
+        <ul class="timeline-track ps-0">
+          {% for step in history %}
+            <li class="timeline-item">
+              <div class="timeline-dot {% if step.new_status == 'Resolved' %}success{% endif %}"></div>
+              <div class="d-flex justify-content-between align-items-center">
+                <strong class="text-dark">{{ step.new_status }}</strong>
+                <span class="text-muted small">{{ step.created_at.strftime('%H:%M • %b %d') }}</span>
+              </div>
+              {% if step.notes %}
+                <p class="text-secondary small mb-0 mt-1">{{ step.notes }}</p>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

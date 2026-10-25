@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Family Safety Center — ResQAI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Header -->
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <h1 class="h3 fw-bold text-navy mb-1">
+        <i class="bi bi-people-fill text-primary me-2"></i>Family Safety Center
+      </h1>
+      <p class="text-muted mb-0">
+        Voluntarily broadcast your safety status to trusted contacts during disasters without congesting emergency phone lines.
+      </p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+      <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addContactModal">
+        <i class="bi bi-person-plus-fill me-1"></i>Add Trusted Contact
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Status Broadcast Card -->
+  <div class="card border-0 shadow-sm mb-4 bg-white">
+    <div class="card-body p-4">
+      <h5 class="fw-bold text-navy mb-2">
+        <i class="bi bi-broadcast me-2 text-danger"></i>Broadcast Safety Status to Family
+      </h5>
+      <p class="text-muted small mb-3">
+        Select your current status below. Your registered contacts will receive an immediate notification with your update and optional location.
+      </p>
+
+      <form action="{{ url_for('family.checkin') }}" method="POST" id="checkin-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="latitude" id="checkin-lat" value="">
+        <input type="hidden" name="longitude" id="checkin-lng" value="">
+
+        <!-- Status selector buttons -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <input type="radio" class="btn-check" name="status" id="status-safe" value="safe" checked autocomplete="off">
+            <label class="btn btn-outline-success w-100 py-3 d-flex flex-column align-items-center" for="status-safe">
+              <i class="bi bi-check-circle-fill fs-2 mb-1"></i>
+              <strong class="fs-5">I AM SAFE</strong>
+              <small class="text-muted">Uninjured, in secure location</small>
+            </label>
+          </div>
+          <div class="col-md-4">
+            <input type="radio" class="btn-check" name="status" id="status-evacuating" value="evacuating" autocomplete="off">
+            <label class="btn btn-outline-warning text-dark w-100 py-3 d-flex flex-column align-items-center" for="status-evacuating">
+              <i class="bi bi-box-arrow-right fs-2 mb-1"></i>
+              <strong class="fs-5">EVACUATING</strong>
+              <small class="text-muted">Moving to official shelter / high ground</small>
+            </label>
+          </div>
+          <div class="col-md-4">
+            <input type="radio" class="btn-check" name="status" id="status-need-help" value="need_help" autocomplete="off">
+            <label class="btn btn-outline-danger w-100 py-3 d-flex flex-column align-items-center" for="status-need-help">
+              <i class="bi bi-exclamation-triangle-fill fs-2 mb-1"></i>
+              <strong class="fs-5">NEED ASSISTANCE</strong>
+              <small class="text-muted">Require food, supplies, or guidance</small>
+            </label>
+          </div>
+        </div>
+
+        <!-- Optional Message -->
+        <div class="mb-3">
+          <label for="checkin-message" class="form-label small fw-semibold">Personal Note / Message (Optional)</label>
+          <input type="text" class="form-control" id="checkin-message" name="message" placeholder="e.g. At Community Hall Relief Camp. Phone battery at 30%, will check in again at 6 PM.">
+        </div>
+
+        <!-- Location sharing toggle -->
+        <div class="row align-items-center mb-3">
+          <div class="col-md-6">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="share-location-switch" name="share_location" value="1">
+              <label class="form-check-label small" for="share-location-switch">
+                Attach current GPS coordinates to broadcast
+              </label>
+            </div>
+            <div id="location-status" class="small text-muted mt-1"></div>
+          </div>
+          <div class="col-md-6">
+            <input type="text" class="form-control form-control-sm" id="location-name" name="location_name" placeholder="Location Name (e.g. Dadar Relief Center)">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary px-4 fw-semibold" id="btn-submit-checkin">
+          <i class="bi bi-send-fill me-1"></i>Broadcast Status Now
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Trusted Contacts Circle -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold text-navy mb-0">
+            <i class="bi bi-shield-lock-fill text-success me-2"></i>Trusted Contacts Circle
+          </h5>
+          <span class="badge bg-light text-dark border">{{ active_contacts_count }} Active</span>
+        </div>
+        <div class="card-body">
+          {% if contacts %}
+            <div class="list-group list-group-flush">
+              {% for contact in contacts %}
+              <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-bold text-dark">{{ contact.name }}</div>
+                  <div class="small text-muted">
+                    <span class="badge bg-light text-secondary border me-1">{{ contact.relationship }}</span>
+                    <span>{{ contact.contact_value }}</span>
+                  </div>
+                  {% if contact.status == 'revoked' %}
+                    <span class="badge bg-secondary mt-1">Revoked</span>
+                  {% else %}
+                    <span class="badge bg-success mt-1">Active</span>
+                  {% endif %}
+                </div>
+                <div>
+                  {% if contact.status == 'active' %}
+                  <form action="{{ url_for('family.revoke_contact', contact_id=contact.id) }}" method="POST" onsubmit="return confirm('Revoke safety update access for {{ contact.name }}?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Revoke Permissions">
+                      <i class="bi bi-person-x"></i> Revoke
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-people display-4 text-muted opacity-50 mb-2"></i>
+              <p class="mb-2">No trusted contacts added yet.</p>
+              <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
+                Add your first contact
+              </button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Check-in Timeline -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold text-navy mb-0">
+            <i class="bi bi-clock-history text-info me-2"></i>Safety Check-In History
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if checkins %}
+            <div class="timeline">
+              {% for ci in checkins %}
+              <div class="border-start border-2 border-primary ps-3 pb-3 mb-2 position-relative">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  {% if ci.status == 'safe' %}
+                    <span class="badge bg-success">I AM SAFE</span>
+                  {% elif ci.status == 'evacuating' %}
+                    <span class="badge bg-warning text-dark">EVACUATING</span>
+                  {% else %}
+                    <span class="badge bg-danger">NEED ASSISTANCE</span>
+                  {% endif %}
+                  <span class="small text-muted">{{ ci.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+                {% if ci.message %}
+                <p class="small text-dark mb-1">{{ ci.message }}</p>
+                {% endif %}
+                {% if ci.share_location and ci.latitude and ci.longitude %}
+                <div class="small text-muted">
+                  <i class="bi bi-geo-alt text-danger me-1"></i>
+                  {{ ci.location_name or "GPS Coordinates" }} ({{ ci.latitude|round(4) }}, {{ ci.longitude|round(4) }})
+                </div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-broadcast display-4 text-muted opacity-50 mb-2"></i>
+              <p class="mb-0">No safety check-ins recorded yet. Use the form above to post your first status.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Trusted Contact -->
+<div class="modal fade" id="addContactModal" tabindex="-1" aria-labelledby="addContactModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold text-navy" id="addContactModalLabel">
+          <i class="bi bi-person-plus-fill me-2 text-primary"></i>Add Trusted Family Contact
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="{{ url_for('family.add_contact') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="contact-name" class="form-label small fw-semibold">Full Name *</label>
+            <input type="text" class="form-control" id="contact-name" name="name" required placeholder="e.g. Ramesh Sharma">
+          </div>
+          <div class="mb-3">
+            <label for="contact-relationship" class="form-label small fw-semibold">Relationship</label>
+            <select class="form-select" id="contact-relationship" name="relationship">
+              <option value="Parent">Parent</option>
+              <option value="Spouse / Partner">Spouse / Partner</option>
+              <option value="Sibling">Sibling</option>
+              <option value="Child">Child</option>
+              <option value="Relative">Relative</option>
+              <option value="Close Friend">Close Friend</option>
+              <option value="Neighbor">Neighbor</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="contact-method" class="form-label small fw-semibold">Communication Method *</label>
+            <select class="form-select" id="contact-method" name="contact_method">
+              <option value="email">Email Address (In-App & Email alerts)</option>
+              <option value="phone">Phone / Mobile Number</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="contact-value" class="form-label small fw-semibold">Email or Phone Number *</label>
+            <input type="text" class="form-control" id="contact-value" name="contact_value" required placeholder="ramesh@example.com or +91 98765 43210">
+            <div class="form-text small">
+              If the contact registers on ResQAI with this email, they will receive in-app notifications instantly.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary fw-semibold">Save Contact</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const locSwitch = document.getElementById('share-location-switch');
+  const locStatus = document.getElementById('location-status');
+  const latInput = document.getElementById('checkin-lat');
+  const lngInput = document.getElementById('checkin-lng');
+
+  if (locSwitch) {
+    locSwitch.addEventListener('change', function() {
+      if (this.checked) {
+        if (!navigator.geolocation) {
+          locStatus.textContent = "Geolocation is not supported by your browser.";
+          this.checked = false;
+          return;
+        }
+        locStatus.innerHTML = '<span class="spinner-border spinner-border-sm text-primary me-1"></span>Acquiring GPS fix...';
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            latInput.value = pos.coords.latitude;
+            lngInput.value = pos.coords.longitude;
+            locStatus.innerHTML = `<span class="text-success"><i class="bi bi-check-circle me-1"></i>GPS attached (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})</span>`;
+          },
+          err => {
+            locStatus.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle me-1"></i>Location access denied.</span>';
+            locSwitch.checked = false;
+          },
+          { enableHighAccuracy: true, timeout: 7000 }
+        );
+      } else {
+        latInput.value = '';
+        lngInput.value = '';
+        locStatus.textContent = '';
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

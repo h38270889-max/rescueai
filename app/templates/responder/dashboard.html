@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Field Responder Desk — ResQAI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <span class="badge bg-primary mb-1"><i class="bi bi-truck"></i> Emergency Field Response Desk</span>
+      <h2 class="fw-bold mb-0">Operational Incident Dispatch</h2>
+      <p class="text-muted small mb-0">Responder: <strong>{{ current_user.full_name }}</strong> &bull; Region: <strong>{{ current_user.region or 'General' }}</strong></p>
+    </div>
+  </div>
+
+  <!-- Active Assigned Incidents -->
+  <div class="resq-card p-4 mb-4 shadow-sm">
+    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+      <i class="bi bi-person-badge-fill text-primary"></i>
+      <span>My Assigned Incidents</span>
+      <span class="badge bg-primary rounded-pill">{{ assigned_incidents|length }}</span>
+    </h5>
+
+    {% if assigned_incidents %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Location</th>
+              <th>Lang</th>
+              <th>Affected</th>
+              <th>Updated</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inc in assigned_incidents %}
+              <tr>
+                <td>
+                  <a href="{{ url_for('responder.incident_detail', incident_id=inc.incident_id) }}" class="fw-bold text-decoration-none">
+                    {{ inc.incident_id }}
+                  </a>
+                </td>
+                <td class="text-capitalize">{{ inc.category.replace('_', ' ') }}</td>
+                <td>
+                  <span class="badge priority-badge-{{ inc.ai_suggested_priority|lower }}">
+                    {{ inc.ai_suggested_priority }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-{{ inc.badge_class }}">{{ inc.status }}</span>
+                </td>
+                <td class="text-truncate" style="max-width: 160px;">
+                  {{ inc.location_address or 'Coordinates provided' }}
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ inc.original_language.upper() }}</span></td>
+                <td>{{ inc.affected_count }}</td>
+                <td class="text-muted">{{ inc.updated_at.strftime('%H:%M') }}</td>
+                <td>
+                  <a href="{{ url_for('responder.incident_detail', incident_id=inc.incident_id) }}" class="btn btn-sm btn-primary py-0 px-2 fw-semibold">
+                    Manage &rarr;
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-clipboard2-check fs-2 opacity-50"></i>
+        <p class="mb-0 mt-2">No incidents currently assigned to your queue.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Unassigned Incidents Awaiting Responder Claim -->
+  <div class="resq-card p-4 mb-4 shadow-sm border-warning">
+    <h5 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+      <span>Unassigned Incident Queue (Ready for Pickup)</span>
+      <span class="badge bg-warning text-dark rounded-pill">{{ unassigned_incidents|length }}</span>
+    </h5>
+
+    {% if unassigned_incidents %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Description Preview</th>
+              <th>Location</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inc in unassigned_incidents %}
+              <tr>
+                <td><code>{{ inc.incident_id }}</code></td>
+                <td class="text-capitalize">{{ inc.category.replace('_', ' ') }}</td>
+                <td>
+                  <span class="badge priority-badge-{{ inc.ai_suggested_priority|lower }}">
+                    {{ inc.ai_suggested_priority }}
+                  </span>
+                </td>
+                <td class="text-truncate" style="max-width: 240px;">
+                  {{ inc.translated_description or inc.description }}
+                </td>
+                <td class="text-truncate" style="max-width: 140px;">
+                  {{ inc.location_address or 'GPS coordinates' }}
+                </td>
+                <td class="text-muted">{{ inc.created_at.strftime('%H:%M') }}</td>
+                <td>
+                  <form method="POST" action="{{ url_for('responder.incident_detail', incident_id=inc.incident_id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="claim">
+                    <button type="submit" class="btn btn-sm btn-outline-warning text-dark py-0 px-2 fw-bold">
+                      Claim Incident
+                    </button>
+                  </form>
+                  <a href="{{ url_for('responder.incident_detail', incident_id=inc.incident_id) }}" class="btn btn-sm btn-outline-secondary py-0 px-2 ms-1">
+                    Inspect
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-check2-all fs-2 text-success opacity-50"></i>
+        <p class="mb-0 mt-2">All submitted emergency incidents are currently assigned to responders.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

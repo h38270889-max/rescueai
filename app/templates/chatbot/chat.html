@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}ResQAI Assistant — AI Emergency Chatbot{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+      <!-- Chat Container Card -->
+      <div class="chat-window">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          <div class="d-flex align-items-center gap-2">
+            <div class="p-2 rounded-circle bg-danger bg-opacity-25 text-white">
+              <i class="bi bi-robot fs-4"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-white">ResQAI Assistant</h5>
+              <div class="d-flex align-items-center gap-2 small text-light opacity-75">
+                <span><i class="bi bi-circle-fill text-success" style="font-size:0.5rem;"></i> Active Triage Desk</span>
+                <span>&bull;</span>
+                <span class="badge bg-secondary py-0">Offline Fallback Enabled</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <!-- Language Selector for Chat -->
+            <select id="chat-lang-select" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto;">
+              {% for code, lang in supported_languages.items() %}
+                <option value="{{ code }}" {% if code == current_language %}selected{% endif %}>
+                  {{ lang.native }}
+                </option>
+              {% endfor %}
+            </select>
+
+            <button id="btn-clear-chat" class="btn btn-sm btn-outline-light" title="Clear Conversation">
+              <i class="bi bi-trash3"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Messages Body -->
+        <div id="chat-messages" class="chat-body">
+          <!-- Initial Assistant Greeting -->
+          <div class="message-bubble assistant">
+            <div>
+              <strong>Hello, I am ResQAI Emergency Assistant.</strong><br>
+              I provide immediate, life-saving safety guidance and triage during natural disasters, fires, floods, and medical crises.
+              <ul class="mb-2 ps-3 mt-2">
+                <li>Ask me what to do in any emergency scenario.</li>
+                <li>Write in your preferred language (Hindi, Marathi, English, Urdu, etc.).</li>
+                <li>In an immediate life threat, call <strong>112</strong> immediately.</li>
+              </ul>
+            </div>
+            <div class="message-meta">
+              <span>Just now</span>
+              <span class="badge bg-secondary ms-1"><i class="bi bi-shield-check"></i> Verified Protocol</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suggested Queries Chips -->
+        <div class="p-2 bg-white border-top border-bottom overflow-x-auto text-nowrap d-flex gap-2">
+          {% for query in suggested_queries %}
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill suggested-query-pill" data-query="{{ query }}">
+              {{ query }}
+            </button>
+          {% endfor %}
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="chat-footer">
+          <div id="voice-indicator" class="alert alert-warning py-1 px-3 small mb-2 d-none d-flex align-items-center">
+            <span class="spinner-grow spinner-grow-sm text-danger me-2" role="status"></span>
+            <span id="voice-status-text">Listening... Speak your emergency now</span>
+            <button type="button" class="btn-close ms-auto py-0" id="btn-stop-voice" aria-label="Stop"></button>
+          </div>
+          <form id="chat-form" class="d-flex gap-2">
+            <input type="hidden" id="chat-session-id" value="{{ session_id }}">
+            <button type="button" id="btn-mic" class="btn btn-outline-secondary" title="Voice Input (Speech-to-Text)">
+              <i class="bi bi-mic-fill"></i>
+            </button>
+            <input type="text" id="chat-input" class="form-control" placeholder="Ask about safety steps or describe an emergency..." autocomplete="off" required>
+            <button type="submit" class="btn btn-resq-urgent px-4 fw-semibold text-nowrap">
+              <i class="bi bi-send-fill me-1"></i> Send
+            </button>
+          </form>
+
+          <div class="d-flex justify-content-between align-items-center mt-2 small text-muted">
+            <div>
+              <i class="bi bi-info-circle me-1"></i> ResQAI does not replace official dispatchers (112).
+            </div>
+            <a href="{{ url_for('incidents.report') }}" class="text-danger fw-bold text-decoration-none">
+              <i class="bi bi-geo-alt-fill"></i> Submit Official Emergency Report &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

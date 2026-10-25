@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Citizen Dashboard — ResQAI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Welcome & Telemetry Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h2 class="fw-bold mb-1">Welcome, {{ current_user.full_name }}</h2>
+      <p class="text-muted small mb-0">
+        Emergency Support Overview &bull; Region: <strong>{{ current_user.region or 'General' }}</strong> &bull; Preferred Language: <strong>{{ current_user.preferred_language.upper() }}</strong>
+      </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('incidents.report') }}" class="btn btn-resq-urgent btn-sm fw-bold">
+        <i class="bi bi-plus-circle me-1"></i> New Emergency Report
+      </a>
+      <a href="{{ url_for('chatbot.index') }}" class="btn btn-outline-primary btn-sm fw-semibold">
+        <i class="bi bi-chat-dots-fill me-1"></i> AI Assistant
+      </a>
+    </div>
+  </div>
+
+  <!-- Real Metrics Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="resq-card p-3 stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase">Total Reports</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ stats.total_reports }}</h3>
+          </div>
+          <div class="fs-1 text-primary opacity-50"><i class="bi bi-file-earmark-medical"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="resq-card p-3 stat-card warning">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase">Active Incidents</div>
+            <h3 class="fw-bold mb-0 text-warning">{{ stats.active_reports }}</h3>
+          </div>
+          <div class="fs-1 text-warning opacity-50"><i class="bi bi-hourglass-split"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="resq-card p-3 stat-card success">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase">Resolved Cases</div>
+            <h3 class="fw-bold mb-0 text-success">{{ stats.resolved_reports }}</h3>
+          </div>
+          <div class="fs-1 text-success opacity-50"><i class="bi bi-check-circle"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="resq-card p-3 stat-card urgent">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase">Unread Alerts</div>
+            <h3 class="fw-bold mb-0 text-danger">{{ stats.unread_notifications }}</h3>
+          </div>
+          <div class="fs-1 text-danger opacity-50"><i class="bi bi-bell"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offline Queue & Broadcasts Notice -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <!-- Recent Incident Submissions -->
+      <div class="resq-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">My Submitted Emergency Reports</h5>
+          <a href="{{ url_for('incidents.my_reports') }}" class="small text-decoration-none">View All Reports &rarr;</a>
+        </div>
+
+        {% if recent_reports %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light small">
+                <tr>
+                  <th>Incident ID</th>
+                  <th>Category</th>
+                  <th>AI Priority</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody class="small">
+                {% for r in recent_reports %}
+                  <tr>
+                    <td>
+                      <a href="{{ url_for('incidents.detail', incident_id=r.incident_id) }}" class="fw-bold text-decoration-none">
+                        {{ r.incident_id }}
+                      </a>
+                    </td>
+                    <td>
+                      <span class="text-capitalize">{{ r.category.replace('_', ' ') }}</span>
+                    </td>
+                    <td>
+                      <span class="badge priority-badge-{{ r.ai_suggested_priority|lower }}">
+                        {{ r.ai_suggested_priority }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge bg-{{ r.badge_class }}">{{ r.status }}</span>
+                    </td>
+                    <td class="text-muted">{{ r.created_at.strftime('%b %d, %H:%M') }}</td>
+                    <td>
+                      <a href="{{ url_for('incidents.detail', incident_id=r.incident_id) }}" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                        View
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-shield-check fs-1 opacity-25"></i>
+            <p class="mt-2 mb-2">You have not submitted any emergency reports yet.</p>
+            <a href="{{ url_for('incidents.report') }}" class="btn btn-sm btn-resq-urgent">
+              File Emergency Report
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Active Alerts and Notifications Side-Panel -->
+    <div class="col-lg-4">
+      <div class="resq-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Active Public Alerts</h5>
+          <a href="{{ url_for('alerts.list_alerts') }}" class="small text-decoration-none">All Alerts</a>
+        </div>
+
+        {% if active_alerts %}
+          <div class="d-flex flex-column gap-2 mb-4">
+            {% for a in active_alerts %}
+              <div class="p-3 rounded-3 bg-light border border-danger border-opacity-25">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="badge priority-badge-{{ a.urgency|lower }}">{{ a.urgency }}</span>
+                  <small class="text-muted">{{ a.created_at.strftime('%H:%M') }}</small>
+                </div>
+                <h6 class="fw-bold mb-1">
+                  <a href="{{ url_for('alerts.detail', alert_id=a.alert_id) }}" class="text-dark text-decoration-none">
+                    {{ a.title }}
+                  </a>
+                </h6>
+                <p class="text-muted small mb-0 text-truncate">{{ a.message }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small">No active emergency alerts in your region right now.</p>
+        {% endif %}
+
+        <h6 class="fw-bold text-muted small text-uppercase mb-2">Emergency Quick Dial</h6>
+        <div class="d-flex gap-2">
+          <a href="tel:112" class="btn btn-sm btn-danger w-50 fw-bold"><i class="bi bi-telephone-fill"></i> Dial 112</a>
+          <a href="{{ url_for('main.offline_guide') }}" class="btn btn-sm btn-outline-dark w-50 fw-semibold"><i class="bi bi-book"></i> Guide</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

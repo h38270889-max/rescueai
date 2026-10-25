@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile — ResQAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="resq-card p-4 p-sm-5 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+          <div>
+            <h3 class="fw-bold mb-1">User Profile Settings</h3>
+            <p class="text-muted small mb-0">Manage language preferences, contact details, and emergency notification settings.</p>
+          </div>
+          <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-key me-1"></i> Change Password
+          </a>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.profile') }}">
+          {{ form.hidden_tag() }}
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small" for="full_name">{{ form.full_name.label.text }}</label>
+              {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+              {% for error in form.full_name.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small" for="phone">{{ form.phone.label.text }}</label>
+              {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+              {% for error in form.phone.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small" for="preferred_language">{{ form.preferred_language.label.text }}</label>
+              {{ form.preferred_language(class="form-select") }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small" for="region">{{ form.region.label.text }}</label>
+              {{ form.region(class="form-control" + (" is-invalid" if form.region.errors else "")) }}
+              {% for error in form.region.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 border mb-4">
+            <div class="form-check">
+              {{ form.consent_emergency_notifications(class="form-check-input") }}
+              <label class="form-check-label small text-dark fw-semibold" for="consent_emergency_notifications">
+                {{ form.consent_emergency_notifications.label.text }}
+              </label>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Account Role: <strong class="text-dark">{{ current_user.role.title() }}</strong></span>
+            <button type="submit" class="btn btn-resq-primary fw-semibold">
+              <i class="bi bi-save me-1"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

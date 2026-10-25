@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}ResQAI — AI Emergency Triage & Offline Disaster Support{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-wrapper">
+  <div class="container position-relative" style="z-index: 2;">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <div class="hero-pill mb-3">
+          <i class="bi bi-shield-check text-danger"></i>
+          <span>{{ t('hero_badge') }}</span>
+        </div>
+        <h1 class="display-4 fw-extrabold text-white mb-3 lh-sm">
+          {{ t('hero_title') }}
+        </h1>
+        <p class="lead text-light opacity-90 mb-4">
+          {{ t('hero_subtitle') }}
+        </p>
+
+        <div class="d-flex flex-wrap gap-3 mb-4">
+          <a href="{{ url_for('incidents.report') }}" class="btn btn-resq-urgent btn-lg d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-octagon-fill"></i>
+            <span>{{ t('hero_cta_report') }}</span>
+          </a>
+          <a href="{{ url_for('chatbot.index') }}" class="btn btn-outline-light btn-lg d-flex align-items-center gap-2">
+            <i class="bi bi-chat-dots-fill text-info"></i>
+            <span>{{ t('hero_cta_chat') }}</span>
+          </a>
+        </div>
+
+        <div class="d-flex align-items-center gap-4 text-light small opacity-80 pt-2">
+          <div><i class="bi bi-check-circle-fill text-success me-1"></i> Offline PWA Ready</div>
+          <div><i class="bi bi-check-circle-fill text-success me-1"></i> 14 Languages Supported</div>
+          <div><i class="bi bi-check-circle-fill text-success me-1"></i> Zero-Downtime Fallback</div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <!-- Live Emergency Triage Card Mockup -->
+        <div class="resq-card p-4 shadow-lg text-dark bg-white rounded-4 border-0">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="badge bg-danger px-3 py-2 fw-bold text-uppercase">
+              <i class="bi bi-broadcast me-1"></i> Live Triage Console
+            </span>
+            <span class="badge bg-light text-secondary border">Pan-India: 112</span>
+          </div>
+
+          <h5 class="fw-bold mb-2">Instant Emergency Assistance</h5>
+          <p class="text-muted small mb-3">
+            In danger? Choose an emergency category below for immediate actionable safety guidance or dispatch reporting.
+          </p>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <a href="{{ url_for('incidents.report') }}?cat=medical" class="btn btn-outline-danger w-100 text-start py-2 small fw-semibold">
+                <i class="bi bi-heart-pulse-fill me-1"></i> Medical Crisis
+              </a>
+            </div>
+            <div class="col-6">
+              <a href="{{ url_for('incidents.report') }}?cat=fire" class="btn btn-outline-danger w-100 text-start py-2 small fw-semibold">
+                <i class="bi bi-fire me-1"></i> Fire & Smoke
+              </a>
+            </div>
+            <div class="col-6">
+              <a href="{{ url_for('incidents.report') }}?cat=flood" class="btn btn-outline-primary w-100 text-start py-2 small fw-semibold">
+                <i class="bi bi-water me-1"></i> Flood / Rescue
+              </a>
+            </div>
+            <div class="col-6">
+              <a href="{{ url_for('incidents.report') }}?cat=earthquake" class="btn btn-outline-warning w-100 text-start py-2 small fw-semibold">
+                <i class="bi bi-building-exclamation me-1"></i> Earthquake / Debris
+              </a>
+            </div>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 border small">
+            <div class="d-flex justify-content-between mb-1">
+              <strong class="text-dark">Current System Status</strong>
+              <span class="text-success fw-bold"><i class="bi bi-circle-fill fs-6" style="font-size:0.6rem!important;"></i> Operational</span>
+            </div>
+            <div class="text-muted">
+              Live Incidents: <strong>{{ stats.total_incidents }}</strong> &bull; Responders Active: <strong>Operational</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Active Broadcast Alerts Section (if any exist) -->
+{% if active_alerts %}
+<section class="py-4 bg-danger bg-opacity-10 border-bottom border-danger border-opacity-25">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="spinner-grow spinner-grow-sm text-danger" role="status"></span>
+        <h5 class="fw-bold text-danger mb-0">Active Public Emergency Alerts</h5>
+      </div>
+      <a href="{{ url_for('alerts.list_alerts') }}" class="btn btn-sm btn-outline-danger fw-semibold">View All Alerts</a>
+    </div>
+
+    <div class="row g-3">
+      {% for alert in active_alerts %}
+        <div class="col-md-6">
+          <div class="resq-card p-3 border-danger border-opacity-50 bg-white">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge priority-badge-{{ alert.urgency|lower }} px-2 py-1">
+                {{ alert.urgency }}
+              </span>
+              <small class="text-muted">{{ alert.created_at.strftime('%b %d, %H:%M') }}</small>
+            </div>
+            <h6 class="fw-bold mb-1">
+              <a href="{{ url_for('alerts.detail', alert_id=alert.alert_id) }}" class="text-dark text-decoration-none">
+                {{ alert.title }}
+              </a>
+            </h6>
+            <p class="text-muted small mb-0 text-truncate">
+              {{ alert.message }}
+            </p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- How It Works Section -->
+<section class="py-5 bg-white border-bottom" id="how-it-works">
+  <div class="container py-3">
+    <div class="text-center max-w-700 mx-auto mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-bold text-uppercase px-3 py-1 mb-2">Workflow Architecture</span>
+      <h2 class="fw-bold">How ResQAI Coordinates Relief</h2>
+      <p class="text-muted">A resilient 4-stage pipeline connecting affected people with certified rescue coordinators.</p>
+    </div>
+
+    <div class="row g-4 text-center">
+      <div class="col-lg-3 col-sm-6">
+        <div class="p-4 h-100 resq-card">
+          <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+            <i class="bi bi-geo-alt-fill fs-3"></i>
+          </div>
+          <h5 class="fw-bold">1. Report in Any Language</h5>
+          <p class="text-muted small mb-0">
+            Submit incident reports online or offline. Geolocation coordinates and scene photos are packaged locally with an idempotency key.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-sm-6">
+        <div class="p-4 h-100 resq-card">
+          <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+            <i class="bi bi-cpu-fill fs-3"></i>
+          </div>
+          <h5 class="fw-bold">2. AI Emergency Triage</h5>
+          <p class="text-muted small mb-0">
+            Intelligent rule and LLM classification instantly determines incident category, estimates urgency (Critical to Low), and provides immediate survival steps.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-sm-6">
+        <div class="p-4 h-100 resq-card">
+          <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+            <i class="bi bi-truck fs-3"></i>
+          </div>
+          <h5 class="fw-bold">3. Responder Coordination</h5>
+          <p class="text-muted small mb-0">
+            Authorized field responders receive prioritized queues with mapped GPS coordinates, original text, and accurate translations.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-sm-6">
+        <div class="p-4 h-100 resq-card">
+          <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+            <i class="bi bi-broadcast-pin fs-3"></i>
+          </div>
+          <h5 class="fw-bold">4. Targeted Broadcasts</h5>
+          <p class="text-muted small mb-0">
+            Emergency commanders dispatch high-priority geographical and category-specific broadcast warnings to all consented users.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Core Features Section -->
+<section class="py-5" id="features">
+  <div class="container py-3">
+    <div class="text-center max-w-700 mx-auto mb-5">
+      <span class="badge bg-secondary bg-opacity-10 text-secondary fw-bold text-uppercase px-3 py-1 mb-2">{{ t('section_features_title') }}</span>
+      <h2 class="fw-bold">{{ t('section_features_subtitle') }}</h2>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="resq-card p-4 h-100">
+          <div class="text-primary fs-2 mb-3"><i class="bi bi-robot"></i></div>
+          <h5 class="fw-bold">{{ t('feature_ai_title') }}</h5>
+          <p class="text-muted small">{{ t('feature_ai_desc') }}</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="resq-card p-4 h-100">
+          <div class="text-danger fs-2 mb-3"><i class="bi bi-translate"></i></div>
+          <h5 class="fw-bold">{{ t('feature_multilingual_title') }}</h5>
+          <p class="text-muted small">{{ t('feature_multilingual_desc') }}</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="resq-card p-4 h-100">
+          <div class="text-warning fs-2 mb-3"><i class="bi bi-wifi-off"></i></div>
+          <h5 class="fw-bold">{{ t('feature_offline_title') }}</h5>
+          <p class="text-muted small">{{ t('feature_offline_desc') }}</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="resq-card p-4 h-100">
+          <div class="text-success fs-2 mb-3"><i class="bi bi-megaphone-fill"></i></div>
+          <h5 class="fw-bold">{{ t('feature_broadcast_title') }}</h5>
+          <p class="text-muted small">{{ t('feature_broadcast_desc') }}</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="resq-card p-4 h-100">
+          <div class="text-info fs-2 mb-3"><i class="bi bi-clipboard2-pulse-fill"></i></div>
+          <h5 class="fw-bold">{{ t('feature_responder_title') }}</h5>
+          <p class="text-muted small">{{ t('feature_responder_desc') }}</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="resq-card p-4 h-100">
+          <div class="text-secondary fs-2 mb-3"><i class="bi bi-shield-lock-fill"></i></div>
+          <h5 class="fw-bold">{{ t('feature_security_title') }}</h5>
+          <p class="text-muted small">{{ t('feature_security_desc') }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Multilingual Showcase -->
+<section class="py-5 bg-white border-top border-bottom">
+  <div class="container py-3">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="badge bg-danger bg-opacity-10 text-danger fw-bold text-uppercase px-3 py-1 mb-2">Multilingual Inclusivity</span>
+        <h2 class="fw-bold mb-3">Speak In Your Native Tongue During Disasters</h2>
+        <p class="text-muted">
+          Under panic and distress, victims must never be forced to struggle with foreign terminology. ResQAI natively understands Devanagari, Gurmukhi, Dravidian scripts, Arabic/Urdu scripts, and Latin alphabets.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <span class="badge bg-light text-dark border p-2">English</span>
+          <span class="badge bg-light text-dark border p-2">हिन्दी (Hindi)</span>
+          <span class="badge bg-light text-dark border p-2">मराठी (Marathi)</span>
+          <span class="badge bg-light text-dark border p-2">বাংলা (Bengali)</span>
+          <span class="badge bg-light text-dark border p-2">தமிழ் (Tamil)</span>
+          <span class="badge bg-light text-dark border p-2">తెలుగు (Telugu)</span>
+          <span class="badge bg-light text-dark border p-2">ગુજરાતી (Gujarati)</span>
+          <span class="badge bg-light text-dark border p-2">ಕನ್ನಡ (Kannada)</span>
+          <span class="badge bg-light text-dark border p-2">മലയാളം (Malayalam)</span>
+          <span class="badge bg-light text-dark border p-2">ਪੰਜਾਬੀ (Punjabi)</span>
+          <span class="badge bg-light text-dark border p-2">اردو (Urdu RTL)</span>
+          <span class="badge bg-light text-dark border p-2">العربية (Arabic RTL)</span>
+          <span class="badge bg-light text-dark border p-2">Español</span>
+          <span class="badge bg-light text-dark border p-2">Français</span>
+        </div>
+        <a href="{{ url_for('chatbot.index') }}" class="btn btn-outline-dark fw-semibold">
+          <i class="bi bi-chat-text me-1"></i> Try Multilingual Assistant
+        </a>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="resq-card p-4 shadow-sm bg-light">
+          <h6 class="fw-bold text-muted text-uppercase small mb-3">Sample Multilingual Input & Triage</h6>
+          <div class="p-3 bg-white rounded-3 border mb-2">
+            <span class="badge bg-secondary mb-1">Hindi Input</span>
+            <p class="mb-1 text-dark">"इमारत की तीसरी मंजिल पर भीषण आग लगी है और सीढ़ियों में धुआं भरा है।"</p>
+            <div class="small text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> AI Triage: Fire &bull; Urgency: Critical</div>
+          </div>
+          <div class="p-3 bg-white rounded-3 border">
+            <span class="badge bg-secondary mb-1">Marathi Input</span>
+            <p class="mb-1 text-dark">"आमच्या सोसायटीत तळमजल्यावर ४ फूट पाणी भरले आहे, १० कुटुंब अडकले आहेत."</p>
+            <div class="small text-warning fw-bold"><i class="bi bi-exclamation-circle-fill"></i> AI Triage: Flood &bull; Urgency: High &bull; Rescue Priority</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Live Incident Map Preview Section -->
+<section class="py-5 bg-light border-bottom">
+  <div class="container py-3">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-5">
+        <span class="badge bg-danger bg-opacity-10 text-danger fw-bold text-uppercase px-3 py-1 mb-2">
+          <i class="bi bi-geo-alt-fill me-1"></i> Geospatial Intelligence
+        </span>
+        <h2 class="fw-bold mb-3 text-navy">Live Disaster & Rescue Incident Map</h2>
+        <p class="text-muted">
+          ResQAI aggregates citizen distress calls and field responder reports onto an interactive spatial map with automated urgency clustering.
+        </p>
+        <ul class="list-unstyled mb-4">
+          <li class="mb-2 d-flex align-items-center">
+            <i class="bi bi-shield-check text-success fs-5 me-2"></i>
+            <span><strong>Role-Based Privacy:</strong> Public coordinates are generalized to ~1 km; responders view exact GPS fixes.</span>
+          </li>
+          <li class="mb-2 d-flex align-items-center">
+            <i class="bi bi-layers-half text-primary fs-5 me-2"></i>
+            <span><strong>Multi-Hazard Filtering:</strong> Sort by floods, structural fires, landslides, and medical crises.</span>
+          </li>
+          <li class="d-flex align-items-center">
+            <i class="bi bi-broadcast text-danger fs-5 me-2"></i>
+            <span><strong>One-Tap SOS:</strong> Instantly broadcast your exact GPS distress coordinates to responders.</span>
+          </li>
+        </ul>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('map.index') }}" class="btn btn-primary fw-semibold">
+            <i class="bi bi-map-fill me-1"></i> Open Interactive Map
+          </a>
+          <button type="button" class="btn btn-outline-danger fw-semibold" data-bs-toggle="modal" data-bs-target="#sosModal">
+            <i class="bi bi-exclamation-diamond-fill me-1"></i> One-Tap SOS
+          </button>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="card border-0 shadow rounded-4 overflow-hidden">
+          <div class="card-header bg-navy text-white d-flex justify-content-between align-items-center py-3">
+            <div class="fw-bold"><i class="bi bi-geo-alt text-danger me-2"></i>Active Hotspot Spatial Preview</div>
+            <a href="{{ url_for('map.index') }}" class="btn btn-xs btn-outline-light py-1 px-2 small">Full Screen &rarr;</a>
+          </div>
+          <div class="card-body p-0 position-relative" style="height: 320px; background: #e9ecef;">
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 p-4 text-center">
+              <i class="bi bi-map display-3 text-secondary opacity-50 mb-3"></i>
+              <h5 class="fw-bold text-dark">Real-Time OpenStreetMap Integration</h5>
+              <p class="text-muted small max-w-500 mb-3">
+                Interactive tiles powered by Leaflet.js with category pins, urgency pulsing markers, and GPS location tracking.
+              </p>
+              <a href="{{ url_for('map.index') }}" class="btn btn-sm btn-danger px-4 shadow-sm">
+                <i class="bi bi-crosshair me-1"></i> Launch Live Incident Map
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="py-5 bg-dark text-white text-center" style="background: linear-gradient(135deg, #0d2b45 0%, #0a192f 100%) !important;">
+  <div class="container py-4">
+    <h2 class="fw-bold mb-3">Prepare for Crises Before Connectivity Cuts Out</h2>
+    <p class="lead opacity-80 max-w-700 mx-auto mb-4">
+      Install the ResQAI Progressive Web App on your smartphone or desktop for uninterrupted emergency triage and survival guide access.
+    </p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{{ url_for('incidents.report') }}" class="btn btn-resq-urgent btn-lg">
+        <i class="bi bi-plus-circle me-1"></i> File Emergency Report
+      </a>
+      <a href="{{ url_for('main.offline_guide') }}" class="btn btn-outline-light btn-lg">
+        <i class="bi bi-book me-1"></i> Open Survival Guide
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

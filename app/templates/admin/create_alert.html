@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Dispatch Emergency Alert — ResQAI Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <a href="{{ url_for('admin.alerts') }}" class="small text-decoration-none text-muted mb-2 d-inline-block">
+        &larr; Back to Alerts
+      </a>
+
+      <div class="resq-card p-4 p-sm-5 border-danger shadow-sm">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="p-2 rounded-circle bg-danger bg-opacity-10 text-danger">
+            <i class="bi bi-broadcast-pin fs-3"></i>
+          </div>
+          <div>
+            <h3 class="fw-bold mb-0">Dispatch Public Emergency Alert</h3>
+            <p class="text-muted small mb-0">Broadcast critical disaster directives to registered citizens and responders.</p>
+          </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.create_alert') }}">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small" for="title">{{ form.title.label.text }} *</label>
+            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="e.g. Flash Flood Warning: Relocate to Higher Ground Immediately", autofocus=true) }}
+            {% for error in form.title.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small" for="category">{{ form.category.label.text }} *</label>
+              {{ form.category(class="form-select") }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small" for="urgency">{{ form.urgency.label.text }} *</label>
+              {{ form.urgency(class="form-select text-danger fw-semibold") }}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small" for="target_audience">{{ form.target_audience.label.text }}</label>
+              {{ form.target_audience(class="form-select", id="target_audience_select") }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small" for="target_region">{{ form.target_region.label.text }}</label>
+              {{ form.target_region(class="form-control", placeholder="e.g. Mumbai Metro, Pune Region") }}
+              <div class="form-text small">Applies when audience is set to 'Targeted Regional Broadcast'.</div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold small" for="message">{{ form.message.label.text }} *</label>
+            {{ form.message(class="form-control" + (" is-invalid" if form.message.errors else ""), rows="5", placeholder="Include concise, actionable instructions: what happened, what people should do, helpline numbers, and safe assembly areas...") }}
+            {% for error in form.message.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Broadcast Distribution Notice -->
+          <div class="p-3 bg-light rounded-3 border mb-4 small text-secondary">
+            <div class="fw-bold text-dark mb-1"><i class="bi bi-info-circle-fill text-primary me-1"></i> Multi-Channel Distribution Mechanics:</div>
+            <div>&bull; <strong>In-App Notifications:</strong> Real database records will be generated for all eligible consented users in the audience.</div>
+            <div>&bull; <strong>Browser Push:</strong> Attempted for matched active WebPush service worker subscriptions.</div>
+            <div>&bull; <strong>Audit Log:</strong> The broadcast action, audience size, and sender credentials will be permanently audited.</div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('admin.alerts') }}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-resq-urgent btn-lg fw-bold px-4" onclick="return confirm('Confirm dispatching this emergency broadcast to all targeted citizens?');">
+              <i class="bi bi-megaphone-fill me-1"></i> Dispatch Alert Now
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
