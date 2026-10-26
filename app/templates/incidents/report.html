@@ -34,6 +34,21 @@
           <!-- Hidden input for client-side generated idempotency key -->
           <input type="hidden" id="idempotency_key" name="idempotency_key" value="">
 
+          {% if form.errors %}
+            <div class="alert alert-danger mb-4 p-3 rounded-3 shadow-sm">
+              <div class="fw-bold d-flex align-items-center mb-1">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>Please correct the following before submitting:
+              </div>
+              <ul class="mb-0 ps-3 small">
+                {% for field_name, error_list in form.errors.items() %}
+                  {% for err in error_list %}
+                    <li><strong>{{ form[field_name].label.text if field_name in form else field_name }}:</strong> {{ err }}</li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
           <div class="row g-3 mb-3">
             <div class="col-md-7">
               <label class="form-label fw-semibold small" for="category">{{ form.category.label.text }} *</label>

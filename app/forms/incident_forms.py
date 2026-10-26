@@ -28,7 +28,7 @@ INCIDENT_STATUS_CHOICES = [
 
 class EmergencyReportForm(FlaskForm):
     category = SelectField('Incident Category', choices=INCIDENT_CATEGORY_CHOICES, validators=[DataRequired()])
-    description = TextAreaField('Description of the Emergency (Write in your preferred language)', validators=[DataRequired(), Length(min=10, max=3000)])
+    description = TextAreaField('Description of the Emergency (Write in your preferred language)', validators=[DataRequired(), Length(min=5, max=3000)])
     original_language = SelectField('Message Language', choices=LANGUAGE_CHOICES, default='en')
     contact_name = StringField('Your Name or On-Scene Contact', validators=[Optional(), Length(max=100)])
     contact_phone = StringField('Callback Phone Number', validators=[Optional(), Length(max=30)])

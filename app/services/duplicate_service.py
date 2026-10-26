@@ -79,6 +79,22 @@ def haversine_distance_km(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return round(r * c, 2)
 
+def to_utc(dt):
+    """Normalize datetime to timezone-aware UTC datetime."""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+def to_naive_utc(dt):
+    """Normalize datetime to offset-naive UTC datetime for SQLite queries."""
+    if dt is None:
+        return None
+    if dt.tzinfo is not None:
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
 def check_for_duplicates(report):
     """
     Screen an emergency report against recent incidents.
@@ -90,12 +106,15 @@ def check_for_duplicates(report):
     threshold = current_app.config.get('DUPLICATE_SIMILARITY_THRESHOLD', 0.55)
     distance_threshold_km = current_app.config.get('DUPLICATE_DISTANCE_KM_THRESHOLD', 5.0)
 
-    cutoff_time = (report.created_at or datetime.now(timezone.utc)) - timedelta(hours=time_window_hours)
+    now_utc = datetime.now(timezone.utc)
+    rep_time = to_utc(report.created_at) or now_utc
+    cutoff_time = rep_time - timedelta(hours=time_window_hours)
+    cutoff_naive = to_naive_utc(cutoff_time)
 
     # Query recent incidents excluding the current report itself
     candidates = EmergencyReport.query.filter(
         EmergencyReport.id != report.id,
-        EmergencyReport.created_at >= cutoff_time
+        EmergencyReport.created_at >= cutoff_naive
     ).all()
 
     top_score = 0.0
@@ -132,7 +151,9 @@ def check_for_duplicates(report):
             top_score = composite
             top_candidate = cand
             top_distance = dist
-            time_diff = abs((report.created_at - cand.created_at).total_seconds()) / 3600.0 if report.created_at and cand.created_at else 0.0
+            
+            cand_time = to_utc(cand.created_at)
+            time_diff = abs((rep_time - cand_time).total_seconds()) / 3600.0 if cand_time else 0.0
             top_time_diff = round(time_diff, 1)
             match_reason = f"Text Sim: {int(text_sim*100)}% | Category: {cand.category} | Proximity: {dist}km" if dist is not None else f"Text Sim: {int(text_sim*100)}% | Category: {cand.category}"
 
