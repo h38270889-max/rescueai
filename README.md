@@ -143,3 +143,5 @@ video/ (Project Root)
 ## ⚠️ Important Safety & Legal Disclaimer
 
 ResQAI is an auxiliary emergency assistance platform designed to assist communities and relief responders during crises. **It does NOT claim to replace government emergency services or telecommunication dispatchers.** In any acute, life-threatening emergency, always dial **112 (Pan-India)** or your local national emergency telephone number immediately.
+#   r e s c u e a i  
+ 
